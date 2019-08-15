@@ -969,8 +969,8 @@ anychart.scales.GanttDateTime.prototype.zoomTo = function(startOrUnit, opt_endOr
      */
     this.needsZoomTo = true;
     this.neededZoomToArgs = [startOrUnit, opt_endOrCount, opt_anchor];
+    return this;
   }
-
   return this.setRange(start, end);
 };
 
