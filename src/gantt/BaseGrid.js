@@ -412,12 +412,15 @@ anychart.ganttModule.BaseGrid.prototype.SUPPORTED_CONSISTENCY_STATES =
  *   end: number,
  *   baselineStart: number,
  *   baselineEnd: number,
+ *   baselineProgress: number,
  *   progress: number,
  *   isValidStart: boolean,
  *   isValidEnd: boolean,
  *   isValidTask: boolean,
+ *   isFlatGroupingTask: boolean,
  *   isValidBaseline: boolean,
- *   isValidProgress: boolean
+ *   isValidProgress: boolean,
+ *   baselineProgressPresents: boolean
  * }}
  */
 anychart.ganttModule.BaseGrid.ItemData;
@@ -571,7 +574,7 @@ anychart.ganttModule.BaseGrid.isMilestone = function(item, opt_info) {
  */
 anychart.ganttModule.BaseGrid.isBaseline = function(item, opt_info) {
   var info = opt_info || anychart.ganttModule.BaseGrid.getProjectItemInfo(item);
-  return info.isValidBaseline;
+  return info.isValidBaseline || info.baselineProgressPresents;
 };
 
 
@@ -679,6 +682,11 @@ anychart.ganttModule.BaseGrid.getProjectItemInfo = function(item) {
   var baselineEnd = item.meta(anychart.enums.GanttDataFields.BASELINE_END);
   var progress = item.meta('progressValue');
   var autoProgress = item.meta('autoProgress');
+  var baselineProgress = item.get(anychart.enums.GanttDataFields.BASELINE_PROGRESS_VALUE);
+  var baselineProgressPresents = goog.isNumber(baselineProgress) || anychart.utils.isPercent(baselineProgress);
+  baselineProgress = baselineProgressPresents ?
+      anychart.utils.isPercent(baselineProgress) ? parseFloat(baselineProgress) / 100 : Number(baselineProgress) :
+      NaN;
 
   var startVal = anychart.ganttModule.BaseGrid.checkNaN(start, autoStart);
   var endVal = anychart.ganttModule.BaseGrid.checkNaN(end, autoEnd);
@@ -689,12 +697,15 @@ anychart.ganttModule.BaseGrid.getProjectItemInfo = function(item) {
     end: endVal,
     baselineStart: baselineStart,
     baselineEnd: baselineEnd,
+    baselineProgress: baselineProgress,
     progress: progressVal,
     isValidStart: !isNaN(startVal),
     isValidEnd: !isNaN(endVal),
     isValidTask: !isNaN(startVal) && !isNaN(endVal) && startVal != endVal,
+    isFlatGroupingTask: !isNaN(startVal) && !isNaN(endVal) && startVal == endVal && item.numChildren(),
     isValidBaseline: goog.isNumber(baselineStart) && !isNaN(baselineStart) && goog.isNumber(baselineEnd) && !isNaN(baselineEnd),
-    isValidProgress: !isNaN(progressVal)
+    isValidProgress: !isNaN(progressVal),
+    baselineProgressPresents: baselineProgressPresents
   });
 };
 
@@ -784,6 +795,8 @@ anychart.ganttModule.BaseGrid.prototype.createFormatProvider = function(item, op
     values['barBounds'] = {value: item.meta('relBounds'), type: anychart.enums.TokenType.UNKNOWN};
 
     values['progress'] = {value: info.progress, type: anychart.enums.TokenType.PERCENT};
+
+    values['baselineProgress'] = {value: info.baselineProgressPresents ? info.baselineProgress : 0, type: anychart.enums.TokenType.PERCENT};
 
     if (info.isValidBaseline) {
       rowType = anychart.enums.TLElementTypes.BASELINES;
@@ -2089,6 +2102,29 @@ anychart.ganttModule.BaseGrid.prototype.drawRowFills = function() {
   this.getSelectedPath().clear();
   this.getRowStrokePath().clear();
 
+  // COLORS CONFIG MAGIC PREPARATION!
+  var colorsPrepared = false;
+  var colors, checkers;
+  if (this.interactivityHandler.rowsColoringInternal) {
+    colors = this.interactivityHandler.rowsColoringInternal.colors;
+    if (colors) {
+      checkers = this.interactivityHandler.rowsColoringInternal.checkers;
+      if (checkers) {
+        this.rowsColoringPaths = this.rowsColoringPaths || {};
+        colorsPrepared = true;
+        for (var key in colors) {
+          if (!(key in this.rowsColoringPaths)) {
+            var p = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+            p.stroke(null).zIndex(5);
+            this.rowsColoringPaths[key] = p;
+          }
+          this.rowsColoringPaths[key].clear();
+        }
+      }
+    }
+  }
+  // END OF COLORS CONFIG MAGIC PREPARATION!
+
   var pixelShift = (this.rowStrokeThickness % 2 && acgraph.type() === acgraph.StageType.SVG) ? 0.5 : 0;
 
   for (var i = startIndex; i <= endIndex; i++) {
@@ -2133,6 +2169,29 @@ anychart.ganttModule.BaseGrid.prototype.drawRowFills = function() {
           .lineTo(this.pixelBoundsCache.left, newTop)
           .close();
     }
+
+    // COLORS CONFIG MAGIC!
+    if (colorsPrepared) {
+      var state = this.interactivityHandler.rowsColoringInternal.state;
+      for (var c = 0; c < checkers.length; c++) {
+        var checker = checkers[c];
+        var res = checker(item, state);
+        if (res && res in colors) {
+          var fillRef = colors[res];
+          path = this.rowsColoringPaths[res];
+          path
+              .moveTo(this.pixelBoundsCache.left, top)
+              .lineTo(this.pixelBoundsCache.left + this.totalGridsWidth, top)
+              .lineTo(this.pixelBoundsCache.left + this.totalGridsWidth, newTop)
+              .lineTo(this.pixelBoundsCache.left, newTop)
+              .close()
+              .fill(fillRef);
+          break;
+        }
+      }
+    }
+
+    // END OF COLOR CONFIG MAGIC!
 
     totalTop = (newTop + this.rowStrokeThickness);
 
@@ -2397,7 +2456,8 @@ anychart.ganttModule.BaseGrid.prototype.drawInternal = function(positionRecalcul
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
-    this.pixelBoundsCache = /** @type {anychart.math.Rect} */ (anychart.utils.applyPixelShiftToRect(/** @type {!anychart.math.Rect} */ (this.getPixelBounds()), 0));
+    var pb = /** @type {!anychart.math.Rect} */ (this.getPixelBounds());
+    this.pixelBoundsCache = /** @type {anychart.math.Rect} */ (anychart.utils.applyPixelShiftToRect(pb, 0));
     this.base_.clip(/** @type {anychart.math.Rect} */ (this.pixelBoundsCache));
     this.bgRect_.setBounds(/** @type {anychart.math.Rect} */ (this.pixelBoundsCache));
     this.eventsRect_.setBounds(/** @type {anychart.math.Rect} */ (this.pixelBoundsCache));
