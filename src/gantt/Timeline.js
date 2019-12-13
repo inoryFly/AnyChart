@@ -337,7 +337,8 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
   this.connectors_ = null;
 
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
-    ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW]
+    ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
+    ['cropLabels', anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW]
   ]);
 
   this.controller.timeline(this);
@@ -530,7 +531,8 @@ anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
   /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
   var map = {};
   anychart.core.settings.createDescriptors(map, [
-    [anychart.enums.PropertyHandlerType.MULTI_ARG, 'columnStroke', anychart.core.settings.strokeNormalizer]
+    [anychart.enums.PropertyHandlerType.MULTI_ARG, 'columnStroke', anychart.core.settings.strokeNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer]
   ]);
   return map;
 })();
@@ -5328,6 +5330,138 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 };
 
 
+anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, element) {
+  var tagsData = element.shapeManager.getTagsData();
+
+  for (var tagKey in tagsData) {
+    if (tagsData.hasOwnProperty(tagKey)) {
+      var tag = tagsData[tagKey];
+      if (tag.item === item) {
+        return tag;
+      }
+    }
+  }
+};
+
+
+anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(depth, labelArr, item) {
+  var depthOption = this.milestones().preview().getOption('depth');
+  var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
+      (depth <= depthOption);
+
+  if (depthMatches) {
+    if (anychart.ganttModule.BaseGrid.isMilestone(item)) {
+      var tag = this.getTagByItemAndElement(item, this.milestones().preview());
+      var label = goog.isDef(tag) ? tag.label : void 0;
+      if (goog.isDef(label) && label.enabled()) {
+        goog.array.binaryInsert(labelArr, label, function(v1, v2) {
+          var v1bounds = v1.getTextElement().getBounds();
+          var v2bounds = v2.getTextElement().getBounds();
+          return (v1bounds.left - v2bounds.left) || (v1bounds.width - v2bounds.width) || -1;
+        });
+      }
+    } else {
+      for (var i = 0; i < item.numChildren(); i++) {
+        var child = item.getChildAt(i);
+        this.getPreviewMilestonesLabels(depth + 1, labelArr, child);
+      }
+    }
+  }
+};
+
+
+anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
+  var tagsData;
+  if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {
+    tagsData = this.groupingTasks().shapeManager.getTagsData();
+  } else if (anychart.ganttModule.BaseGrid.isBaseline(item)) {
+    tagsData = this.baselines().shapeManager.getTagsData();
+  }
+
+  var itemTag;
+
+  for (var tagKey in tagsData) {
+    if (tagsData.hasOwnProperty(tagKey)) {
+      var tag = tagsData[tagKey];
+      if (tag.item == item) {
+        itemTag = tag;
+      }
+    }
+  }
+
+  if (goog.isDef(itemTag)) {
+    var labels = [];
+    this.getPreviewMilestonesLabels(0, labels, item);
+
+    for (var i = 0; i < labels.length - 1; i++) {
+      var curLabel = labels[i];
+      var nextLabel = labels[i + 1];
+      curLabel.draw();
+      nextLabel.draw();
+      var curLabelBounds = curLabel.getTextElement().getBounds();
+      var nextLabelBounds = nextLabel.getTextElement().getBounds();
+
+      var intersect = nextLabelBounds.left < (curLabelBounds.left + curLabelBounds.width);
+
+      if (curLabelBounds.left === nextLabelBounds.left) {
+        curLabel.enabled(false);
+      } else if (intersect) {
+        var delta = curLabelBounds.left + curLabelBounds.width - nextLabelBounds.left;
+        var remainder = curLabelBounds.width - delta;
+        if (remainder < 15) {
+          curLabel.enabled(false);
+        } else {
+          curLabel.height(curLabelBounds.height);
+          curLabel.width(curLabelBounds.width - delta);
+        }
+      }
+    }
+    debugger;
+  }
+};
+
+
+/**
+ *
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
+  var visibleItems = this.getVisibleItems();
+
+  var controller = this.controller;
+  var startIndex = controller.startIndex();
+  var endIndex = controller.endIndex();
+
+  for (var i = startIndex; i <= endIndex; i++) {
+    var item = visibleItems[i];
+    if (anychart.ganttModule.BaseGrid.isGroupingTask(item) || anychart.ganttModule.BaseGrid.isBaseline(item)) {
+      var labels = this.getGroupingTaskLabels(item);
+    }
+
+  }
+
+  // for (var i = 0; i < labelsArray.length; i++) {
+  //   var curLabel = labelsArray[i];
+  //   var curLabelBounds = curLabel.bounds_;
+  //
+  //   for (var k = 0; k < labelsArray.length; k++) {
+  //     if (k !== i) {
+  //       var nextLabel = labelsArray[k];
+  //       var nextLabelBounds = nextLabel.bounds_;
+  //
+  //       if (goog.isDef(nextLabelBounds) && goog.isDef(curLabelBounds)) {
+  //         var intersection = goog.math.Rect.intersection(curLabelBounds, nextLabelBounds);
+  //         if (!goog.isNull(intersection)) {
+  //           curLabel.height(curLabelBounds.height);
+  //           curLabel.width(curLabelBounds.width - intersection.width);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+};
+
+
 /**
  * Draws labels.
  * @private
@@ -5428,6 +5562,10 @@ anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
         }
       }
     }
+  }
+
+  if (this.getOption('cropLabels')) {
+    this.checkOverlap_();
   }
 
   this.labels().resumeSignalsDispatching(true);
