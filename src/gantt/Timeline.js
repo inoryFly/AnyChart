@@ -5426,14 +5426,15 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, ne
   var finalCurLabelBounds = curLabelWideBounds || curLabelTextBounds;
   var finalNextLabelBounds = nextLabelWideBounds || nextLabelTextBounds;
 
-  var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalNextLabelBounds, nextTag.bounds);
+  var nextExtendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalNextLabelBounds, nextTag.bounds);
+  var curExtendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalCurLabelBounds, curTag.bounds);
 
-  var intersect = extendedBounds.left < (finalCurLabelBounds.left + finalCurLabelBounds.width);
+  var intersect = nextExtendedBounds.left < (finalCurLabelBounds.left + finalCurLabelBounds.width);
 
   if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
     curLabel.enabled(false);
   } else if (intersect) {
-    var delta = finalCurLabelBounds.left + finalCurLabelBounds.width - extendedBounds.left;
+    var delta = finalCurLabelBounds.left + finalCurLabelBounds.width - nextExtendedBounds.left;
     var remainder = finalCurLabelBounds.width - delta;
     if (remainder < widthThreshold) {
       curLabel.enabled(false);
