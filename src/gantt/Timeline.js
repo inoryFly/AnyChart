@@ -5401,6 +5401,8 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
     tagsData = this.baselines().shapeManager.getTagsData();
   }
 
+  // Preview milestones labels factory.
+  var pmLabelsFactory = this.milestones().preview().labels();
   var itemTag;
 
   for (var tagKey in tagsData) {
@@ -5408,6 +5410,7 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
       var tag = tagsData[tagKey];
       if (tag.item == item) {
         itemTag = tag;
+        break;
       }
     }
   }
@@ -5426,23 +5429,31 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
       var nextLabel = labels[i + 1];
       curLabel.draw();
       nextLabel.draw();
-      var curLabelBounds = curLabel.getTextElement().getBounds();
-      var nextLabelBounds = nextLabel.getTextElement().getBounds();
+      var curLabelTextBounds = curLabel.getTextElement().getBounds();
+      var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
 
-      var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(nextLabelBounds, nextTag.bounds);
+      var curLabelWideBounds, nextLabelWideBounds;
 
-      var intersect = extendedBounds.left < (curLabelBounds.left + curLabelBounds.width);
+      if (pmLabelsFactory.background().enabled()) {
+        var padding = curLabel.getFinalSettings('padding');
+        curLabelWideBounds = anychart.core.utils.Padding.widenBounds(curLabelTextBounds, padding);
+        nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, padding);
+      }
 
-      if (curLabelBounds.left === nextLabelBounds.left) {
+      var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(nextLabelTextBounds, nextTag.bounds);
+
+      var intersect = extendedBounds.left < (curLabelTextBounds.left + curLabelTextBounds.width);
+
+      if (curLabelTextBounds.left === nextLabelTextBounds.left) {
         curLabel.enabled(false);
       } else if (intersect) {
-        var delta = curLabelBounds.left + curLabelBounds.width - extendedBounds.left;
-        var remainder = curLabelBounds.width - delta;
+        var delta = curLabelTextBounds.left + curLabelTextBounds.width - extendedBounds.left;
+        var remainder = curLabelTextBounds.width - delta;
         if (remainder < widthThreshold) {
           curLabel.enabled(false);
         } else {
-          curLabel.height(curLabelBounds.height);
-          curLabel.width(curLabelBounds.width - delta);
+          curLabel.height(curLabelTextBounds.height);
+          curLabel.width(curLabelTextBounds.width - delta);
         }
       }
     }
