@@ -5393,6 +5393,51 @@ anychart.ganttModule.TimeLine.getRectWithFullWidth = function(bounds1, bounds2) 
 };
 
 
+/**
+ *
+ * @param curTag
+ * @param nextTag
+ */
+anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, nextTag) {
+  var curLabel = curTag.label;
+  var nextLabel = nextTag.label;
+  curLabel.draw();
+  nextLabel.draw();
+  var curLabelTextBounds = curLabel.getTextElement().getBounds();
+  var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
+  var pmLabelsFactory = this.milestones().preview().labels();
+  var widthThreshold = 30;
+
+  var curLabelWideBounds, nextLabelWideBounds;
+
+  if (pmLabelsFactory.background().enabled()) {
+    var padding = curLabel.getFinalSettings('padding');
+    curLabelWideBounds = anychart.core.utils.Padding.widenBounds(curLabelTextBounds, padding);
+    nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, padding);
+  }
+
+  var finalCurLabelBounds = curLabelWideBounds || curLabelTextBounds;
+  var finalNextLabelBounds = nextLabelWideBounds || nextLabelTextBounds;
+
+  var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalNextLabelBounds, nextTag.bounds);
+
+  var intersect = extendedBounds.left < (finalCurLabelBounds.left + finalCurLabelBounds.width);
+
+  if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
+    curLabel.enabled(false);
+  } else if (intersect) {
+    var delta = finalCurLabelBounds.left + finalCurLabelBounds.width - extendedBounds.left;
+    var remainder = finalCurLabelBounds.width - delta;
+    if (remainder < widthThreshold) {
+      curLabel.enabled(false);
+    } else {
+      curLabel.height(curLabelTextBounds.height);
+      curLabel.width(curLabelTextBounds.width - delta);
+    }
+  }
+};
+
+
 anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
   var tagsData;
   if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {
@@ -5419,43 +5464,12 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
     var curRow = this.getTagRow(itemTag);
     var labels = [];
     var tags = [];
-    var widthThreshold = 30;
     this.getPreviewMilestonesLabels(0, labels, tags, item, curRow);
 
     for (var i = 0; i < labels.length - 1; i++) {
       var curTag = tags[i];
       var nextTag = tags[i + 1];
-      var curLabel = labels[i];
-      var nextLabel = labels[i + 1];
-      curLabel.draw();
-      nextLabel.draw();
-      var curLabelTextBounds = curLabel.getTextElement().getBounds();
-      var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
-
-      var curLabelWideBounds, nextLabelWideBounds;
-
-      if (pmLabelsFactory.background().enabled()) {
-        var padding = curLabel.getFinalSettings('padding');
-        curLabelWideBounds = anychart.core.utils.Padding.widenBounds(curLabelTextBounds, padding);
-        nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, padding);
-      }
-
-      var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(nextLabelTextBounds, nextTag.bounds);
-
-      var intersect = extendedBounds.left < (curLabelTextBounds.left + curLabelTextBounds.width);
-
-      if (curLabelTextBounds.left === nextLabelTextBounds.left) {
-        curLabel.enabled(false);
-      } else if (intersect) {
-        var delta = curLabelTextBounds.left + curLabelTextBounds.width - extendedBounds.left;
-        var remainder = curLabelTextBounds.width - delta;
-        if (remainder < widthThreshold) {
-          curLabel.enabled(false);
-        } else {
-          curLabel.height(curLabelTextBounds.height);
-          curLabel.width(curLabelTextBounds.width - delta);
-        }
-      }
+      this.checkLabelsOverlap(curTag, nextTag);
     }
     // debugger;
   }
@@ -5478,28 +5492,7 @@ anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
     if (anychart.ganttModule.BaseGrid.isGroupingTask(item) || anychart.ganttModule.BaseGrid.isBaseline(item)) {
       var labels = this.getGroupingTaskLabels(item);
     }
-
   }
-
-  // for (var i = 0; i < labelsArray.length; i++) {
-  //   var curLabel = labelsArray[i];
-  //   var curLabelBounds = curLabel.bounds_;
-  //
-  //   for (var k = 0; k < labelsArray.length; k++) {
-  //     if (k !== i) {
-  //       var nextLabel = labelsArray[k];
-  //       var nextLabelBounds = nextLabel.bounds_;
-  //
-  //       if (goog.isDef(nextLabelBounds) && goog.isDef(curLabelBounds)) {
-  //         var intersection = goog.math.Rect.intersection(curLabelBounds, nextLabelBounds);
-  //         if (!goog.isNull(intersection)) {
-  //           curLabel.height(curLabelBounds.height);
-  //           curLabel.width(curLabelBounds.width - intersection.width);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 };
 
 
