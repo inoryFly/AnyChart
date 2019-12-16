@@ -4552,6 +4552,8 @@ anychart.ganttModule.TimeLine.prototype.drawAsMilestonePreview_ = function(dataI
       bounds = this.fixBounds_(el, bounds, dataItem, void 0, isSelected);
 
       var tag = this.createTag(dataItem, el, bounds);
+      var curRow = this.controller.getIndexByHeight(bounds.top - this.headerHeight());
+      tag['rowNumber'] = curRow;
       this.setRelatedBounds_(dataItem, bounds);
       el.rendering().callDrawer(dataItem, bounds, tag, void 0, isSelected, initializerUid);
     }
@@ -5330,13 +5332,13 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 };
 
 
-anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, element) {
+anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, element, row) {
   var tagsData = element.shapeManager.getTagsData();
 
   for (var tagKey in tagsData) {
     if (tagsData.hasOwnProperty(tagKey)) {
       var tag = tagsData[tagKey];
-      if (tag.item === item) {
+      if (tag.item === item && this.getTagRow(tag) === row) {
         return tag;
       }
     }
@@ -5344,14 +5346,14 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, 
 };
 
 
-anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(depth, labelArr, item) {
+anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(depth, labelArr, tagsArr, item, row) {
   var depthOption = this.milestones().preview().getOption('depth');
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
       (depth <= depthOption);
 
   if (depthMatches) {
     if (anychart.ganttModule.BaseGrid.isMilestone(item)) {
-      var tag = this.getTagByItemAndElement(item, this.milestones().preview());
+      var tag = this.getTagByItemAndElement(item, this.milestones().preview(), row);
       var label = goog.isDef(tag) ? tag.label : void 0;
       if (goog.isDef(label) && label.enabled()) {
         goog.array.binaryInsert(labelArr, label, function(v1, v2) {
@@ -5359,14 +5361,35 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(de
           var v2bounds = v2.getTextElement().getBounds();
           return (v1bounds.left - v2bounds.left) || (v1bounds.width - v2bounds.width) || -1;
         });
+
+        goog.array.binaryInsert(tagsArr, tag, function(v1, v2) {
+          var v1bounds = v1.label.getTextElement().getBounds();
+          var v2bounds = v2.label.getTextElement().getBounds();
+          return (v1bounds.left - v2bounds.left) || (v1bounds.width - v2bounds.width) || -1;
+        });
       }
     } else {
       for (var i = 0; i < item.numChildren(); i++) {
         var child = item.getChildAt(i);
-        this.getPreviewMilestonesLabels(depth + 1, labelArr, child);
+        this.getPreviewMilestonesLabels(depth + 1, labelArr, tagsArr, child, row);
       }
     }
   }
+};
+
+
+anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
+  var height = tag.bounds.top - this.headerHeight();
+  return this.controller.getIndexByHeight(height);
+};
+
+
+anychart.ganttModule.TimeLine.getRectWithFullWidth = function(bounds1, bounds2) {
+  var left = Math.min(bounds1.left, bounds2.left);
+  var bounds1Right = bounds1.left + bounds1.width;
+  var bounds2Right = bounds2.left + bounds2.width;
+  var right = Math.max(bounds1Right, bounds2Right);
+  return anychart.math.rect(left, bounds1.top, right - left, bounds1.height);
 };
 
 
@@ -5390,10 +5413,14 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
   }
 
   if (goog.isDef(itemTag)) {
+    var curRow = this.getTagRow(itemTag);
     var labels = [];
-    this.getPreviewMilestonesLabels(0, labels, item);
+    var tags = [];
+    this.getPreviewMilestonesLabels(0, labels, tags, item, curRow);
 
     for (var i = 0; i < labels.length - 1; i++) {
+      var curTag = tags[i];
+      var nextTag = tags[i + 1];
       var curLabel = labels[i];
       var nextLabel = labels[i + 1];
       curLabel.draw();
@@ -5401,12 +5428,14 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
       var curLabelBounds = curLabel.getTextElement().getBounds();
       var nextLabelBounds = nextLabel.getTextElement().getBounds();
 
-      var intersect = nextLabelBounds.left < (curLabelBounds.left + curLabelBounds.width);
+      var extendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(nextLabelBounds, nextTag.bounds);
+
+      var intersect = extendedBounds.left < (curLabelBounds.left + curLabelBounds.width);
 
       if (curLabelBounds.left === nextLabelBounds.left) {
         curLabel.enabled(false);
       } else if (intersect) {
-        var delta = curLabelBounds.left + curLabelBounds.width - nextLabelBounds.left;
+        var delta = curLabelBounds.left + curLabelBounds.width - extendedBounds.left;
         var remainder = curLabelBounds.width - delta;
         if (remainder < 15) {
           curLabel.enabled(false);
@@ -5416,7 +5445,7 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
         }
       }
     }
-    debugger;
+    // debugger;
   }
 };
 
