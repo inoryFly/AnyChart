@@ -6079,6 +6079,7 @@ anychart.standalones.resourceTimeline = function() {
   // auto generated
   //proto['backgroundFill'] = proto.backgroundFill;
   //proto['columnStroke'] = proto.columnStroke;
+  //proto['cropLabels'] = proto.cropLabels;
 
   // row coloring
   //proto['rowFill'] = proto.rowFill;
