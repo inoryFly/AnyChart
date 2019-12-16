@@ -5416,6 +5416,7 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
     var curRow = this.getTagRow(itemTag);
     var labels = [];
     var tags = [];
+    var widthThreshold = 30;
     this.getPreviewMilestonesLabels(0, labels, tags, item, curRow);
 
     for (var i = 0; i < labels.length - 1; i++) {
@@ -5437,7 +5438,7 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
       } else if (intersect) {
         var delta = curLabelBounds.left + curLabelBounds.width - extendedBounds.left;
         var remainder = curLabelBounds.width - delta;
-        if (remainder < 15) {
+        if (remainder < widthThreshold) {
           curLabel.enabled(false);
         } else {
           curLabel.height(curLabelBounds.height);
