@@ -5412,8 +5412,15 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, ne
 
   if (pmLabelsFactory.background().enabled()) {
     var padding = curLabel.getFinalSettings('padding');
-    curLabelWideBounds = anychart.core.utils.Padding.widenBounds(curLabelTextBounds, padding);
-    nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, padding);
+    // Not a good thing to invoke new Padding every time, probably.
+    var paddingObject = {
+      top: padding[0],
+      right: padding[1],
+      bottom: padding[2],
+      left: padding[3]
+    };
+    curLabelWideBounds = anychart.core.utils.Padding.widenBounds(curLabelTextBounds, paddingObject);
+    nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, paddingObject);
   }
 
   var finalCurLabelBounds = curLabelWideBounds || curLabelTextBounds;
