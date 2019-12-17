@@ -5346,7 +5346,7 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, 
 };
 
 
-anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(depth, labelArr, tagsArr, item, row) {
+anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
   var depthOption = this.milestones().preview().getOption('depth');
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
       (depth <= depthOption);
@@ -5356,12 +5356,6 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(de
       var tag = this.getTagByItemAndElement(item, this.milestones().preview(), row);
       var label = goog.isDef(tag) ? tag.label : void 0;
       if (goog.isDef(label) && label.enabled()) {
-        goog.array.binaryInsert(labelArr, label, function(v1, v2) {
-          var v1bounds = v1.getTextElement().getBounds();
-          var v2bounds = v2.getTextElement().getBounds();
-          return (v1bounds.left - v2bounds.left) || (v1bounds.width - v2bounds.width) || -1;
-        });
-
         goog.array.binaryInsert(tagsArr, tag, function(v1, v2) {
           var v1bounds = v1.label.getTextElement().getBounds();
           var v2bounds = v2.label.getTextElement().getBounds();
@@ -5371,7 +5365,7 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesLabels = function(de
     } else {
       for (var i = 0; i < item.numChildren(); i++) {
         var child = item.getChildAt(i);
-        this.getPreviewMilestonesLabels(depth + 1, labelArr, tagsArr, child, row);
+        this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
       }
     }
   }
@@ -5394,11 +5388,13 @@ anychart.ganttModule.TimeLine.getRectWithFullWidth = function(bounds1, bounds2) 
 
 
 /**
- *
- * @param curTag
- * @param nextTag
+ * Check if adjacent milestone previews labels overlap, taking milestone preview
+ * marker itself into account.
+ * @param {anychart.ganttModule.TimeLine.Tag} curTag - Tag representing mileston preview.
+ * @param {anychart.ganttModule.TimeLine.Tag} nextTag - Tag representing mileston preview.
+ * @private
  */
-anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, nextTag) {
+anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag) {
   var curLabel = curTag.label;
   var nextLabel = nextTag.label;
   curLabel.draw();
@@ -5425,15 +5421,15 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, ne
   var finalCurLabelBounds = curLabelWideBounds || curLabelTextBounds;
   var finalNextLabelBounds = nextLabelWideBounds || nextLabelTextBounds;
 
-  var nextExtendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalNextLabelBounds, nextTag.bounds);
-  var curExtendedBounds = anychart.ganttModule.TimeLine.getRectWithFullWidth(finalCurLabelBounds, curTag.bounds);
+  var nextExtendedBounds = goog.math.Rect.boundingRect(finalNextLabelBounds, nextTag.bounds);
+  var curExtendedBounds = goog.math.Rect.boundingRect(finalCurLabelBounds, curTag.bounds);
 
-  var intersect = nextExtendedBounds.left < (finalCurLabelBounds.left + finalCurLabelBounds.width);
+  var intersect = nextExtendedBounds.left < curExtendedBounds.getRight();
 
   if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
     curLabel.enabled(false);
   } else if (intersect) {
-    var delta = finalCurLabelBounds.left + finalCurLabelBounds.width - nextExtendedBounds.left;
+    var delta = curExtendedBounds.getRight() - nextExtendedBounds.left;
     var remainder = finalCurLabelBounds.width - delta;
     if (remainder < widthThreshold) {
       curLabel.enabled(false);
@@ -5445,7 +5441,13 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, ne
 };
 
 
-anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
+/**
+ * Checks all milestone previews in the row for overlaps
+ * and crop if they do.
+ * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
   var tagsData;
   if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {
     tagsData = this.groupingTasks().shapeManager.getTagsData();
@@ -5453,8 +5455,6 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
     tagsData = this.baselines().shapeManager.getTagsData();
   }
 
-  // Preview milestones labels factory.
-  var pmLabelsFactory = this.milestones().preview().labels();
   var itemTag;
 
   for (var tagKey in tagsData) {
@@ -5469,21 +5469,30 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
 
   if (goog.isDef(itemTag)) {
     var curRow = this.getTagRow(itemTag);
-    var labels = [];
     var tags = [];
-    this.getPreviewMilestonesLabels(0, labels, tags, item, curRow);
+    this.getPreviewMilestonesTags_(0, tags, item, curRow);
 
-    for (var i = 0; i < labels.length - 1; i++) {
+    var lastTagWithEnabledLabel;
+
+    for (var i = 0; i < tags.length - 1; i++) {
       var curTag = tags[i];
       var nextTag = tags[i + 1];
-      this.checkLabelsOverlap(curTag, nextTag);
+
+      this.checkLabelsOverlap_(curTag, nextTag);
+
+      if (curTag.label.enabled()) {
+        lastTagWithEnabledLabel = curTag;
+      } else if (goog.isDef(lastTagWithEnabledLabel)) {
+        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag);
+      }
     }
   }
 };
 
 
 /**
- *
+ * Checks if milestone preview labels overlap and crops
+ * them if they do.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
@@ -5496,7 +5505,7 @@ anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
   for (var i = startIndex; i <= endIndex; i++) {
     var item = visibleItems[i];
     if (anychart.ganttModule.BaseGrid.isGroupingTask(item) || anychart.ganttModule.BaseGrid.isBaseline(item)) {
-      var labels = this.getGroupingTaskLabels(item);
+      this.checkOverlapsOnRow_(item);
     }
   }
 };
