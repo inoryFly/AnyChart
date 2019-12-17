@@ -5412,7 +5412,6 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap = function(curTag, ne
 
   if (pmLabelsFactory.background().enabled()) {
     var padding = curLabel.getFinalSettings('padding');
-    // Not a good thing to invoke new Padding every time, probably.
     var paddingObject = {
       top: padding[0],
       right: padding[1],
@@ -5461,7 +5460,7 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
   for (var tagKey in tagsData) {
     if (tagsData.hasOwnProperty(tagKey)) {
       var tag = tagsData[tagKey];
-      if (tag.item == item) {
+      if (tag.item === item) {
         itemTag = tag;
         break;
       }
@@ -5479,7 +5478,6 @@ anychart.ganttModule.TimeLine.prototype.getGroupingTaskLabels = function(item) {
       var nextTag = tags[i + 1];
       this.checkLabelsOverlap(curTag, nextTag);
     }
-    // debugger;
   }
 };
 
