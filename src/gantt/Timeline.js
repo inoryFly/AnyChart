@@ -5430,11 +5430,18 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
     curLabel.enabled(false);
   } else if (intersect) {
     var delta = curExtendedBounds.getRight() - nextExtendedBounds.left;
+
+    // With anchor === 'center' label is shrinked with delta/2 on each side.
+    if (curLabel.getFinalSettings('anchor') === 'center') {
+      delta *= 2;
+    }
+
     var remainder = finalCurLabelBounds.width - delta;
     if (remainder < widthThreshold) {
       curLabel.enabled(false);
     } else {
       curLabel.height(curLabelTextBounds.height);
+
       curLabel.width(curLabelTextBounds.width - delta);
     }
   }
