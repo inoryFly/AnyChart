@@ -5378,15 +5378,6 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
 };
 
 
-anychart.ganttModule.TimeLine.getRectWithFullWidth = function(bounds1, bounds2) {
-  var left = Math.min(bounds1.left, bounds2.left);
-  var bounds1Right = bounds1.left + bounds1.width;
-  var bounds2Right = bounds2.left + bounds2.width;
-  var right = Math.max(bounds1Right, bounds2Right);
-  return anychart.math.rect(left, bounds1.top, right - left, bounds1.height);
-};
-
-
 /**
  * Check if adjacent milestone previews labels overlap, taking milestone preview
  * marker itself into account.
@@ -5394,7 +5385,7 @@ anychart.ganttModule.TimeLine.getRectWithFullWidth = function(bounds1, bounds2) 
  * @param {anychart.ganttModule.TimeLine.Tag} nextTag - Tag representing mileston preview.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag) {
+anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority) {
   var curLabel = curTag.label;
   var nextLabel = nextTag.label;
   curLabel.draw();
@@ -5429,6 +5420,11 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
     curLabel.enabled(false);
   } else if (intersect) {
+
+    var labelToCrop = firstHasPriority ? nextLabel : curLabel;
+    var labelToCropBoundsWithPadding = firstHasPriority ? finalNextLabelBounds : finalCurLabelBounds;
+    var labelToCropTextBounds = firstHasPriority ? nextLabelTextBounds : curLabelTextBounds;
+
     var delta = curExtendedBounds.getRight() - nextExtendedBounds.left;
 
     // With anchor === 'center' label is shrinked with delta/2 on each side.
