@@ -5346,6 +5346,30 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, 
 };
 
 
+/**
+ *
+ * @param tag1
+ * @param tag2
+ * @returns {number}
+ */
+anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
+  var anchor = tag1.label.getFinalSettings('anchor');
+
+  var tag1bounds = tag1.label.getTextElement().getBounds();
+  var tag2bounds = tag2.label.getTextElement().getBounds();
+
+  if (goog.string.startsWith(anchor, 'left')) {
+    return (tag1bounds.left - tag2bounds.left) || (tag1bounds.width - tag2bounds.width) || -1;
+  } else if (goog.string.startsWith(anchor, 'center')) {
+    var tag1CenterX = tag1bounds.left + tag1bounds.width / 2;
+    var tag2CenterX = tag2bounds.left + tag2bounds.width / 2;
+    return (tag1CenterX - tag2CenterX) || (tag1bounds.width - tag2bounds.width) || -1;
+  } else {
+    return (tag1bounds.getRight() - tag2bounds.getRight()) || (tag1bounds.width - tag2bounds.width) || -1;
+  }
+};
+
+
 anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
   var depthOption = this.milestones().preview().getOption('depth');
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
@@ -5356,11 +5380,7 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
       var tag = this.getTagByItemAndElement(item, this.milestones().preview(), row);
       var label = goog.isDef(tag) ? tag.label : void 0;
       if (goog.isDef(label) && label.enabled()) {
-        goog.array.binaryInsert(tagsArr, tag, function(v1, v2) {
-          var v1bounds = v1.label.getTextElement().getBounds();
-          var v2bounds = v2.label.getTextElement().getBounds();
-          return (v1bounds.left - v2bounds.left) || (v1bounds.width - v2bounds.width) || -1;
-        });
+        goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
       }
     } else {
       for (var i = 0; i < item.numChildren(); i++) {
@@ -5428,17 +5448,17 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
     var delta = curExtendedBounds.getRight() - nextExtendedBounds.left;
 
     // With anchor === 'center' label is shrinked with delta/2 on each side.
-    if (curLabel.getFinalSettings('anchor') === 'center') {
+    if (labelToCrop.getFinalSettings('anchor') === 'center') {
       delta *= 2;
     }
 
-    var remainder = finalCurLabelBounds.width - delta;
+    var remainder = labelToCropBoundsWithPadding.width - delta;
     if (remainder < widthThreshold) {
-      curLabel.enabled(false);
+      labelToCrop.enabled(false);
     } else {
-      curLabel.height(curLabelTextBounds.height);
+      labelToCrop.height(labelToCropTextBounds.height);
 
-      curLabel.width(curLabelTextBounds.width - delta);
+      labelToCrop.width(labelToCropTextBounds.width - delta);
     }
   }
 };
@@ -5480,13 +5500,15 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
     for (var i = 0; i < tags.length - 1; i++) {
       var curTag = tags[i];
       var nextTag = tags[i + 1];
+      var anchor = curTag.label.getFinalSettings('anchor');
+      var firstHasPriority = goog.string.startsWith(anchor, 'right') ? true : false;
 
-      this.checkLabelsOverlap_(curTag, nextTag);
+      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority);
 
       if (curTag.label.enabled()) {
         lastTagWithEnabledLabel = curTag;
       } else if (goog.isDef(lastTagWithEnabledLabel)) {
-        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag);
+        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag, firstHasPriority);
       }
     }
   }
