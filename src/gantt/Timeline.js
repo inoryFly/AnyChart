@@ -5332,6 +5332,13 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 };
 
 
+/**
+ * Finds tag for given data item and row.
+ * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item
+ * @param {anychart.ganttModule.elements.TimelineElement} element
+ * @param {number} row
+ * @return {anychart.ganttModule.TimeLine.Tag?}
+ */
 anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, element, row) {
   var tagsData = element.shapeManager.getTagsData();
 
@@ -5343,17 +5350,21 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, 
       }
     }
   }
+  return null;
 };
 
 
 /**
- *
- * @param tag1
- * @param tag2
- * @returns {number}
+ * Insert tags, sorted by their bounds.
+ * If anchor is left, sort by bounds left side.
+ * If anchor is center, sort by bounds center.
+ * If anchor is right, sort by right side.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag1
+ * @param {anychart.ganttModule.TimeLine.Tag} tag2
+ * @return {number}
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
-  var anchor = tag1.label.getFinalSettings('anchor');
+  var anchor = /** @type {string} */(tag1.label.getFinalSettings('anchor'));
 
   var tag1bounds = tag1.label.getTextElement().getBounds();
   var tag2bounds = tag2.label.getTextElement().getBounds();
@@ -5370,6 +5381,15 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
 };
 
 
+/**
+ * Populates tags array with preview milestone tag elements for given row.
+ * @param {number} depth - Current depth.
+ * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
+ * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
+ *  preview milestones onto.
+ * @param {number} row - Item row.
+ * @private
+ */
 anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
   var depthOption = this.milestones().preview().getOption('depth');
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
@@ -5385,13 +5405,20 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
     } else {
       for (var i = 0; i < item.numChildren(); i++) {
         var child = item.getChildAt(i);
-        this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
+        if (goog.isDef(child)) {
+          this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
+        }
       }
     }
   }
 };
 
 
+/**
+ * Calculates tag row.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag whose row should be calculated.
+ * @return {number} - Row.
+ */
 anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
   var height = tag.bounds.top - this.headerHeight();
   return this.controller.getIndexByHeight(height);
@@ -5403,6 +5430,7 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
  * marker itself into account.
  * @param {anychart.ganttModule.TimeLine.Tag} curTag - Tag representing mileston preview.
  * @param {anychart.ganttModule.TimeLine.Tag} nextTag - Tag representing mileston preview.
+ * @param {boolean} firstHasPriority - Tag with priority does not get cropped.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority) {
@@ -5429,8 +5457,8 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
     nextLabelWideBounds = anychart.core.utils.Padding.widenBounds(nextLabelTextBounds, paddingObject);
   }
 
-  var finalCurLabelBounds = curLabelWideBounds || curLabelTextBounds;
-  var finalNextLabelBounds = nextLabelWideBounds || nextLabelTextBounds;
+  var finalCurLabelBounds = /** @type {goog.math.Rect} */(curLabelWideBounds || curLabelTextBounds);
+  var finalNextLabelBounds = /** @type {goog.math.Rect} */(nextLabelWideBounds || nextLabelTextBounds);
 
   var nextExtendedBounds = goog.math.Rect.boundingRect(finalNextLabelBounds, nextTag.bounds);
   var curExtendedBounds = goog.math.Rect.boundingRect(finalCurLabelBounds, curTag.bounds);
@@ -5501,7 +5529,7 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
       var curTag = tags[i];
       var nextTag = tags[i + 1];
       var anchor = curTag.label.getFinalSettings('anchor');
-      var firstHasPriority = goog.string.startsWith(anchor, 'right') ? true : false;
+      var firstHasPriority = goog.string.startsWith(anchor, 'right');
 
       this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority);
 
