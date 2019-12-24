@@ -5398,7 +5398,7 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
   if (depthMatches) {
     if (anychart.ganttModule.BaseGrid.isMilestone(item)) {
       var tag = this.getTagByItemAndElement(item, this.milestones().preview(), row);
-      var label = goog.isDef(tag) ? tag.label : void 0;
+      var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
       if (goog.isDef(label) && label.enabled()) {
         goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
       }
