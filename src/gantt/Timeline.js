@@ -5429,7 +5429,7 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
  * @return {number} - Row.
  */
 anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
-  var height = this.controller.scrollTo() + tag.bounds.top - this.headerHeight();
+  var height = this.controller.verticalOffset() + tag.bounds.top - this.headerHeight();
   return this.controller.getIndexByHeight(height);
 };
 
