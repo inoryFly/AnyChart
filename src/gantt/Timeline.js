@@ -5465,12 +5465,6 @@ anychart.ganttModule.TimeLine.applyTagCache = function(tag, cache) {
 anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority, absoluteRow) {
   var curLabel = curTag.label;
   var nextLabel = nextTag.label;
-  curLabel.draw();
-  nextLabel.draw();
-  var curLabelTextBounds = curLabel.getTextElement().getBounds();
-  var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
-  var pmLabelsFactory = this.milestones().preview().labels();
-  var widthThreshold = 30;
 
   var curTagCache = this.milestonePreviewsCache_[goog.getUid(curTag.item) + '_row_' + absoluteRow];
   var nextTagCache = this.milestonePreviewsCache_[goog.getUid(nextTag.item) + '_row_' + absoluteRow];
@@ -5480,6 +5474,13 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   //   anychart.ganttModule.TimeLine.applyTagCache(nextTag, nextTagCache);
   //   return;
   // }
+
+  curLabel.draw();
+  nextLabel.draw();
+  var curLabelTextBounds = curLabel.getTextElement().getBounds();
+  var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
+  var pmLabelsFactory = this.milestones().preview().labels();
+  var widthThreshold = 30;
 
   curTagCache = {enabled: true};
   nextTagCache = {enabled: true};
