@@ -5424,7 +5424,7 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
 
 
 /**
- * Calculates tag row.
+ * Calculates tag row by it's position.
  * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag whose row should be calculated.
  * @return {number} - Row.
  */
@@ -5573,6 +5573,7 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
   if (goog.isDef(itemTag)) {
     var curRow = this.getTagRow(itemTag);
     var absoluteRow = itemTag.item.getMeta('index');
+
     var tags = [];
     this.getPreviewMilestonesTags_(0, tags, item, curRow);
 
@@ -5584,12 +5585,12 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
       var anchor = curTag.label.getFinalSettings('anchor');
       var firstHasPriority = goog.string.startsWith(anchor, 'right');
 
-      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority, absoluteRow);
+      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority, curRow);
 
       if (curTag.label.enabled()) {
         lastTagWithEnabledLabel = curTag;
       } else if (goog.isDef(lastTagWithEnabledLabel)) {
-        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag, firstHasPriority, absoluteRow);
+        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag, firstHasPriority, curRow);
       }
     }
   }
