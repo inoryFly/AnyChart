@@ -5368,8 +5368,8 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement = function(item, 
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
  * If anchor is right, sort by right side.
- * @param {anychart.ganttModule.TimeLine.Tag} tag1
- * @param {anychart.ganttModule.TimeLine.Tag} tag2
+ * @param {anychart.ganttModule.TimeLine.Tag?} tag1
+ * @param {anychart.ganttModule.TimeLine.Tag?} tag2
  * @return {number}
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
@@ -5434,6 +5434,11 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
 };
 
 
+/**
+ * Applies cache to tag label.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag
+ * @param {{enabled: boolean, width: number, height: number}} cache
+ */
 anychart.ganttModule.TimeLine.applyTagCache = function(tag, cache) {
   if (!goog.isDefAndNotNull(tag.label)) {
     return;
@@ -5454,6 +5459,7 @@ anychart.ganttModule.TimeLine.applyTagCache = function(tag, cache) {
  * @param {anychart.ganttModule.TimeLine.Tag} curTag - Tag representing mileston preview.
  * @param {anychart.ganttModule.TimeLine.Tag} nextTag - Tag representing mileston preview.
  * @param {boolean} firstHasPriority - Tag with priority does not get cropped.
+ * @param {number} absoluteRow - Absolute row number. Needed for labels caching.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority, absoluteRow) {
@@ -5606,8 +5612,8 @@ anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
   var visibleItems = this.getVisibleItems();
 
   var controller = this.controller;
-  var startIndex = controller.startIndex();
-  var endIndex = controller.endIndex();
+  var startIndex = /** @type {number} */(controller.startIndex());
+  var endIndex = /** @type {number} */(controller.endIndex());
 
   for (var i = startIndex; i <= endIndex; i++) {
     var item = visibleItems[i];
