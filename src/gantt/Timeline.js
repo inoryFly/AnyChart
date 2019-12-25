@@ -5469,11 +5469,11 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   var curTagCache = this.milestonePreviewsCache_[goog.getUid(curTag.item) + '_row_' + absoluteRow];
   var nextTagCache = this.milestonePreviewsCache_[goog.getUid(nextTag.item) + '_row_' + absoluteRow];
 
-  if (goog.isDef(curTagCache) && goog.isDef(nextTagCache)) {
-    anychart.ganttModule.TimeLine.applyTagCache(curTag, curTagCache);
-    anychart.ganttModule.TimeLine.applyTagCache(nextTag, nextTagCache);
-    return;
-  }
+  // if (goog.isDef(curTagCache) && goog.isDef(nextTagCache)) {
+  //   anychart.ganttModule.TimeLine.applyTagCache(curTag, curTagCache);
+  //   anychart.ganttModule.TimeLine.applyTagCache(nextTag, nextTagCache);
+  //   return;
+  // }
 
   curTagCache = {enabled: true};
   nextTagCache = {enabled: true};
