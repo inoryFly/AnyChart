@@ -5426,34 +5426,14 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
 
 
 /**
- * Applies cache to tag label.
- * @param {anychart.ganttModule.TimeLine.Tag} tag
- * @param {{enabled: boolean, width: number, height: number}} cache
- */
-anychart.ganttModule.TimeLine.applyTagCache = function(tag, cache) {
-  if (!goog.isDefAndNotNull(tag.label)) {
-    return;
-  }
-
-  if (!cache.enabled) {
-    tag.label.enabled(false);
-  } else if (cache.width && cache.height) {
-    tag.label.width(cache.width);
-    tag.label.height(cache.height);
-  }
-};
-
-
-/**
  * Check if adjacent milestone previews labels overlap, taking milestone preview
  * marker itself into account.
  * @param {anychart.ganttModule.TimeLine.Tag} curTag - Tag representing mileston preview.
  * @param {anychart.ganttModule.TimeLine.Tag} nextTag - Tag representing mileston preview.
  * @param {boolean} firstHasPriority - Tag with priority does not get cropped.
- * @param {number} absoluteRow - Absolute row number. Needed for labels caching.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority, absoluteRow) {
+anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, nextTag, firstHasPriority) {
   var curLabel = curTag.label;
   var nextLabel = nextTag.label;
 
@@ -5463,9 +5443,6 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
   var pmLabelsFactory = this.milestones().preview().labels();
   var widthThreshold = 30;
-
-  curTagCache = {enabled: true};
-  nextTagCache = {enabled: true};
 
   var curLabelWideBounds, nextLabelWideBounds;
 
@@ -5491,11 +5468,7 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
 
   if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
     curLabel.enabled(false);
-    curTagCache.enabled = false;
   } else if (intersect) {
-
-    var croppedTagCache = firstHasPriority ? nextTagCache : curTagCache;
-
     var labelToCrop = firstHasPriority ? nextLabel : curLabel;
     var labelToCropBoundsWithPadding = firstHasPriority ? finalNextLabelBounds : finalCurLabelBounds;
     var labelToCropTextBounds = firstHasPriority ? nextLabelTextBounds : curLabelTextBounds;
@@ -5510,21 +5483,16 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
     var remainder = labelToCropBoundsWithPadding.width - delta;
     if (remainder < widthThreshold) {
       labelToCrop.enabled(false);
-      croppedTagCache.enabled = false;
     } else {
       labelToCrop.height(labelToCropTextBounds.height);
-
       labelToCrop.width(labelToCropTextBounds.width - delta);
-      croppedTagCache.height = labelToCropTextBounds.height;
-      croppedTagCache.width = labelToCropTextBounds.width - delta;
     }
   }
 };
 
 
 /**
- * Checks all milestone previews in the row for overlaps
- * and crop if they do.
+ * Checks milestone previews if they overlap and crops them if they do.
  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item
  * @private
  */
@@ -5550,8 +5518,6 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
 
   if (goog.isDef(itemTag)) {
     var curRow = this.getTagRow(itemTag);
-    var absoluteRow = itemTag.item.getMeta('index');
-
     var tags = [];
     this.getPreviewMilestonesTags_(0, tags, item, curRow);
 
@@ -5563,12 +5529,12 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
       var anchor = curTag.label.getFinalSettings('anchor');
       var firstHasPriority = goog.string.startsWith(anchor, 'right');
 
-      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority, absoluteRow);
+      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority);
 
       if (curTag.label.enabled()) {
         lastTagWithEnabledLabel = curTag;
       } else if (goog.isDef(lastTagWithEnabledLabel)) {
-        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag, firstHasPriority, absoluteRow);
+        this.checkLabelsOverlap_(lastTagWithEnabledLabel, nextTag, firstHasPriority);
       }
     }
   }
@@ -5581,9 +5547,11 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.checkOverlap_ = function() {
+  // Returns all uncollapsed items.
   var visibleItems = this.getVisibleItems();
 
   var controller = this.controller;
+  // Get indexes of items currently displayed on timeline.
   var startIndex = /** @type {number} */(controller.startIndex());
   var endIndex = /** @type {number} */(controller.endIndex());
 
