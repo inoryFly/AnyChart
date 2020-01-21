@@ -5383,6 +5383,7 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
 
 /**
  * Populates tags array with preview milestone tag elements for given row.
+ * Modifies tagsArr argument.
  * @param {number} depth - Current depth.
  * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
@@ -5441,12 +5442,12 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   nextLabel.draw();
   var curLabelTextBounds = curLabel.getTextElement().getBounds();
   var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
-  var pmLabelsFactory = this.milestones().preview().labels();
+  var milestonePreviewLabelsFactory = this.milestones().preview().labels();
   var widthThreshold = 30;
 
   var curLabelWideBounds, nextLabelWideBounds;
 
-  if (pmLabelsFactory.background().enabled()) {
+  if (milestonePreviewLabelsFactory.background().enabled()) {
     var padding = curLabel.getFinalSettings('padding');
     var paddingObject = {
       top: padding[0],
