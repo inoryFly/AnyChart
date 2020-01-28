@@ -90,7 +90,6 @@ anychart.timelineModule.Chart = function() {
   this.rangeSeriesList = [];
   this.momentSeriesList = [];
 
-  this.initInteractivity_();
 };
 goog.inherits(anychart.timelineModule.Chart, anychart.core.ChartWithSeries);
 
@@ -1176,6 +1175,8 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
         this.container().getStage().getDomWrapper(), false);
     this.mouseWheelHandler_.listen('mousewheel', this.handleMouseWheel_, false, this);
   }
+
+  this.initInteractivity_();
 };
 
 
@@ -1293,7 +1294,7 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
  * @private
  */
 anychart.timelineModule.Chart.prototype.initInteractivity_ = function() {
-  goog.events.listen(document, goog.events.EventType.MOUSEDOWN, this.mouseDownHandler, false, this);
+  this.rootElement.listen(goog.events.EventType.MOUSEDOWN, this.mouseDownHandler, true, this);
 };
 
 
@@ -1321,8 +1322,8 @@ anychart.timelineModule.Chart.prototype.mouseDownHandler = function(event) {
     this.startTranslateHorizontal = this.horizontalTranslate;
     this.startTranslateVertical = this.verticalTranslate;
 
-    goog.events.listen(document, goog.events.EventType.MOUSEMOVE, this.mouseMoveHandler, true, this);
-    goog.events.listen(document, goog.events.EventType.MOUSEUP, this.mouseUpHandler, true, this);
+    this.rootElement.listen(goog.events.EventType.MOUSEMOVE, this.mouseMoveHandler, true, this);
+    this.rootElement.listen(goog.events.EventType.MOUSEUP, this.mouseUpHandler, true, this);
   }
 };
 
@@ -1344,8 +1345,8 @@ anychart.timelineModule.Chart.prototype.mouseMoveHandler = function(event) {
  * @param {anychart.core.MouseEvent} event
  */
 anychart.timelineModule.Chart.prototype.mouseUpHandler = function(event) {
-  goog.events.unlisten(document, goog.events.EventType.MOUSEMOVE, this.mouseMoveHandler, true, this);
-  goog.events.unlisten(document, goog.events.EventType.MOUSEUP, this.mouseUpHandler, true, this);
+  this.rootElement.unlisten(goog.events.EventType.MOUSEMOVE, this.mouseMoveHandler, true, this);
+  this.rootElement.unlisten(goog.events.EventType.MOUSEUP, this.mouseUpHandler, true, this);
 };
 
 
