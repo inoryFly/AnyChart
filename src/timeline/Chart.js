@@ -42,6 +42,10 @@ anychart.timelineModule.Chart = function() {
   this.xScale_ = new anychart.scales.GanttDateTime();
   this.setupCreated('scale', this.xScale_);
   this.initScale_(this.xScale_);
+
+  var axis = this.axis();
+  axis.scale(this.xScale_);
+
   this.xScale_.listenSignals(this.scaleInvalidated_, this);
 
   /**
@@ -1113,9 +1117,6 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.SCALE_CHART_SCALES)) {
-    if (axis) {
-      axis.scale(this.scale());
-    }
     this.invalidate(anychart.ConsistencyState.SERIES_CHART_SERIES | anychart.ConsistencyState.AXES_CHART_AXES |
         anychart.ConsistencyState.AXES_CHART_AXES_MARKERS);
     this.markConsistent(anychart.ConsistencyState.SCALE_CHART_SCALES);
