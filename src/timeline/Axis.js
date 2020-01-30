@@ -639,6 +639,7 @@ anychart.timelineModule.Axis.prototype.drawAxis = function() {
 
     this.axisStrokePath_.stroke(stroke);
     this.axisPath_.fill(fill);
+    this.axisPath_.stroke('none');
   }
 };
 
