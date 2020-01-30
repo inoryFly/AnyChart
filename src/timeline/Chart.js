@@ -569,6 +569,9 @@ anychart.timelineModule.Chart.prototype.prepareSeries = function() {
 anychart.timelineModule.Chart.prototype.getSeriesMinMaxValues = function(series) {
   var dateMin = +Infinity;
   var dateMax = -Infinity;
+  // Really bad move, consider achieving the goal (correct scale min/max after series.data() method call) in a different way.
+  series.drawingPlan = null;
+  //var it = series.data().getIterator();
   var it = series.getResetIterator();
   var seriesType = series.seriesType();
 
