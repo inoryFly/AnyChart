@@ -420,7 +420,7 @@ goog.addDependency('../../../../src/scales/Base.js', ['anychart.scales.Base'], [
 goog.addDependency('../../../../src/scales/Continuous.js', ['anychart.scales.Continuous'], ['anychart.format', 'anychart.math', 'anychart.utils', 'goog.array'], {});
 goog.addDependency('../../../../src/scales/DateTime.js', ['anychart.scales.DateTime'], ['anychart.enums', 'anychart.scales.Continuous', 'anychart.scales.DateTimeTicks', 'anychart.scales.ScatterBase'], {});
 goog.addDependency('../../../../src/scales/DateTimeTicks.js', ['anychart.scales.DateTimeTicks'], ['anychart.core.Base', 'anychart.format', 'goog.array', 'goog.date.Interval', 'goog.date.UtcDateTime'], {});
-goog.addDependency('../../../../src/scales/GanttDateTime.js', ['anychart.scales.GanttDateTime'], ['anychart.core.Base', 'anychart.enums', 'anychart.format', 'goog.array', 'goog.date.Interval', 'goog.date.UtcDateTime', 'goog.string.format'], {});
+goog.addDependency('../../../../src/scales/GanttDateTime.js', ['anychart.scales.GanttDateTime'], ['anychart.core.Base', 'anychart.enums', 'anychart.format', 'anychart.resourceModule.Calendar', 'goog.array', 'goog.date.Interval', 'goog.date.UtcDateTime', 'goog.string.format'], {});
 goog.addDependency('../../../../src/scales/IScale.js', ['anychart.scales.IGeoScale'], [], {});
 goog.addDependency('../../../../src/scales/IXScale.js', ['anychart.scales.IXScale'], [], {});
 goog.addDependency('../../../../src/scales/Linear.js', ['anychart.scales.Linear'], ['anychart.enums', 'anychart.scales.ScatterBase', 'anychart.scales.ScatterTicks'], {});

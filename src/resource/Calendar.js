@@ -281,12 +281,12 @@ anychart.resourceModule.Calendar.prototype.availabilities = function(opt_value) 
  * @return {Array.<anychart.resourceModule.Calendar.ScheduleItem>} An array of schedule items.
  */
 anychart.resourceModule.Calendar.prototype.getWorkingSchedule = function(startDate, endDate, opt_unit, opt_count) {
-  return this.getWorkingScheduleInternal(
-      anychart.utils.normalizeTimestamp(startDate),
-      anychart.utils.normalizeTimestamp(endDate),
-      anychart.utils.getIntervalFromInfo(
-          /** @type {anychart.enums.Interval} */(anychart.enums.normalizeInterval(opt_unit, anychart.enums.Interval.DAY, true)),
-          anychart.utils.normalizeToNaturalNumber(opt_count)));
+  var start = anychart.utils.normalizeTimestamp(startDate);
+  var end = anychart.utils.normalizeTimestamp(endDate);
+  var unit = /** @type {anychart.enums.Interval} */(anychart.enums.normalizeInterval(opt_unit, anychart.enums.Interval.DAY, true));
+  var count = anychart.utils.normalizeToNaturalNumber(opt_count);
+  var interval = anychart.utils.getIntervalFromInfo(unit, count);
+  return this.getWorkingScheduleInternal(start, end, interval);
 };
 
 
