@@ -336,6 +336,8 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    */
   this.connectors_ = null;
 
+  this.milestonePreviewLabelsCache_ = new Map();
+
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['cropLabels', anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW]
@@ -1670,6 +1672,8 @@ anychart.ganttModule.TimeLine.prototype.scale = function(opt_value) {
  */
 anychart.ganttModule.TimeLine.prototype.scaleInvalidated_ = function(event) {
   if (event.hasSignal(anychart.Signal.NEEDS_RECALCULATION)) {
+    this.milestonePreviewLabelsCache_.clear();
+    console.log('Cache cleared');
     this.invalidate(anychart.ConsistencyState.TIMELINE_SCALES | anychart.ConsistencyState.TIMELINE_MARKERS, anychart.Signal.NEEDS_REDRAW);
   }
 };
@@ -5326,6 +5330,10 @@ anychart.ganttModule.TimeLine.prototype.markersInvalidated = function() {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
+  if (event.hasSignal(anychart.Signal.BOUNDS_CHANGED)) {
+    this.milestonePreviewLabelsCache_.clear();
+    console.log('Cache cleared on labels invalidation');
+  }
   this.invalidate(anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW);
 };
 
@@ -5424,6 +5432,24 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
 };
 
 
+anychart.ganttModule.TimeLine.prototype.applyTagCache = function(tag, cache) {
+  if (!goog.isDef(cache)) {
+    return;
+  }
+
+  var label = tag.label;
+  var enabled = cache.enabled;
+  var width = cache.width;
+  var height = cache.height;
+
+  label.enabled(enabled);
+  if (goog.isDef(width)) {
+    label.width(width);
+    label.height(height);
+  }
+};
+
+
 /**
  * Check if adjacent milestone previews labels overlap, taking milestone preview
  * marker itself into account.
@@ -5442,6 +5468,10 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
   var nextLabelTextBounds = nextLabel.getTextElement().getBounds();
   var milestonePreviewLabelsFactory = this.milestones().preview().labels();
   var widthThreshold = 30;
+
+  var cache = this.milestonePreviewLabelsCache_;
+  var curTagCacheKey = goog.getUid(curTag.item) + '_row_' + (this.getTagRow(curTag) + this.controller.startIndex());
+  var nextTagCacheKey = goog.getUid(nextTag.item) + '_row_' + (this.getTagRow(nextTag) + this.controller.startIndex());
 
   var curLabelWideBounds, nextLabelWideBounds;
 
@@ -5467,7 +5497,9 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
 
   if (finalCurLabelBounds.left === finalNextLabelBounds.left) {
     curLabel.enabled(false);
+    cache.set(curTagCacheKey, {enabled: false});
   } else if (intersect) {
+    var cacheValue = {};
     var labelToCrop = firstHasPriority ? nextLabel : curLabel;
     var labelToCropBoundsWithPadding = firstHasPriority ? finalNextLabelBounds : finalCurLabelBounds;
     var labelToCropTextBounds = firstHasPriority ? nextLabelTextBounds : curLabelTextBounds;
@@ -5482,10 +5514,14 @@ anychart.ganttModule.TimeLine.prototype.checkLabelsOverlap_ = function(curTag, n
     var remainder = labelToCropBoundsWithPadding.width - delta;
     if (remainder < widthThreshold) {
       labelToCrop.enabled(false);
+      cacheValue.enabled = false;
     } else {
       labelToCrop.height(labelToCropTextBounds.height);
       labelToCrop.width(labelToCropTextBounds.width - delta);
+      cacheValue.height = labelToCropTextBounds.height;
+      cacheValue.width = labelToCropTextBounds.width - delta;
     }
+    cache.set(firstHasPriority ? nextTagCacheKey : curTagCacheKey, cacheValue);
   }
 };
 
@@ -5528,7 +5564,16 @@ anychart.ganttModule.TimeLine.prototype.checkOverlapsOnRow_ = function(item) {
       var anchor = curTag.label.getFinalSettings('anchor');
       var firstHasPriority = goog.string.startsWith(anchor, 'right');
 
-      this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority);
+      var curTagCacheKey = goog.getUid(curTag.item) + '_row_' + (this.getTagRow(curTag) + this.controller.startIndex());
+      var nextTagCacheKey = goog.getUid(nextTag.item) + '_row_' + (this.getTagRow(nextTag) + this.controller.startIndex());
+      var cache = this.milestonePreviewLabelsCache_;
+
+      if (cache.has(curTagCacheKey) && cache.has(nextTagCacheKey)) {
+        this.applyTagCache(curTag, cache.get(curTagCacheKey));
+        this.applyTagCache(nextTag, cache.get(nextTagCacheKey));
+      } else {
+        this.checkLabelsOverlap_(curTag, nextTag, firstHasPriority);
+      }
 
       if (curTag.label.enabled()) {
         lastTagWithEnabledLabel = curTag;
