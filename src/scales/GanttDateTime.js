@@ -1218,7 +1218,10 @@ anychart.scales.GanttDateTime.prototype.getLevelsData = function() {
   return /** @type {Array.<anychart.scales.GanttDateTime.LevelData>} */(row['levels']);
 };
 
-
+/**
+ *
+ * @return {Array} - TODO .
+ */
 anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function() {
   if (this.calendar_) {
     this.calculate();

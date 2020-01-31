@@ -1405,6 +1405,7 @@ anychart.ganttModule.BaseGrid.prototype.enableDocMouseMove = function(value) {
 anychart.ganttModule.BaseGrid.prototype.getBase = function() {
   if (!this.base_) {
     this.base_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.base_, 'base-layer');
     //We handle mouseDown here to prevent double click selection.
     this.bindHandlersToGraphics(this.base_, null, null, null, null, /** @type {Function} */ (this.handleMouseDown_));
   }
@@ -1419,6 +1420,7 @@ anychart.ganttModule.BaseGrid.prototype.getBase = function() {
 anychart.ganttModule.BaseGrid.prototype.getCellsLayer = function() {
   if (!this.cellsLayer_) {
     this.cellsLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.cellsLayer_, 'cells-layer');
     this.cellsLayer_.zIndex(anychart.ganttModule.BaseGrid.CELLS_Z_INDEX);
   }
   return this.cellsLayer_;
@@ -1432,6 +1434,7 @@ anychart.ganttModule.BaseGrid.prototype.getCellsLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getDrawLayer = function() {
   if (!this.drawLayer_) {
     this.drawLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.drawLayer_, 'draw-layer');
     this.drawLayer_.zIndex(anychart.ganttModule.BaseGrid.DRAW_Z_INDEX);
   }
   return this.drawLayer_;
@@ -1445,6 +1448,7 @@ anychart.ganttModule.BaseGrid.prototype.getDrawLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getContentLayer = function() {
   if (!this.contentLayer_) {
     this.contentLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.contentLayer_, 'content-layer');
     this.contentLayer_.zIndex(anychart.ganttModule.BaseGrid.CONTENT_Z_INDEX);
   }
   return this.contentLayer_;
@@ -1458,6 +1462,7 @@ anychart.ganttModule.BaseGrid.prototype.getContentLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getEditLayer = function() {
   if (!this.editLayer_) {
     this.editLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.editLayer_, 'edit-layer');
     this.editLayer_.zIndex(anychart.ganttModule.BaseGrid.EDIT_Z_INDEX);
   }
   return this.editLayer_;
@@ -1471,6 +1476,7 @@ anychart.ganttModule.BaseGrid.prototype.getEditLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getClipLayer = function() {
   if (!this.clipLayer_) {
     this.clipLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.clipLayer_, 'clip-layer');
     this.clipLayer_.zIndex(anychart.ganttModule.BaseGrid.CLIP_Z_INDEX);
   }
   return this.clipLayer_;
@@ -1484,6 +1490,7 @@ anychart.ganttModule.BaseGrid.prototype.getClipLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getScrollsLayer = function() {
   if (!this.scrollsLayer_) {
     this.scrollsLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.scrollsLayer_, 'scrolls-layer');
     this.scrollsLayer_.zIndex(anychart.ganttModule.BaseGrid.SCROLLS_Z_INDEX);
   }
   return this.scrollsLayer_;
@@ -1497,6 +1504,7 @@ anychart.ganttModule.BaseGrid.prototype.getScrollsLayer = function() {
 anychart.ganttModule.BaseGrid.prototype.getOddPath = function() {
   if (!this.oddPath_) {
     this.oddPath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.oddPath_, 'odd-path');
     this.oddPath_.stroke(null).zIndex(1);
   }
   return this.oddPath_;
@@ -1510,6 +1518,7 @@ anychart.ganttModule.BaseGrid.prototype.getOddPath = function() {
 anychart.ganttModule.BaseGrid.prototype.getEvenPath = function() {
   if (!this.evenPath_) {
     this.evenPath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.evenPath_, 'even-path');
     this.evenPath_.stroke(null).zIndex(1);
   }
   return this.evenPath_;
@@ -1523,6 +1532,7 @@ anychart.ganttModule.BaseGrid.prototype.getEvenPath = function() {
 anychart.ganttModule.BaseGrid.prototype.getHoverPath = function() {
   if (!this.hoverPath_) {
     this.hoverPath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.hoverPath_, 'hover-path');
     this.hoverPath_.stroke(null)/*.fill(/!** @type {acgraph.vector.Fill} *!/(this.getOption('rowHoverFill')))*/.zIndex(2);
   }
   return this.hoverPath_;
@@ -1536,6 +1546,7 @@ anychart.ganttModule.BaseGrid.prototype.getHoverPath = function() {
 anychart.ganttModule.BaseGrid.prototype.getSelectedPath = function() {
   if (!this.selectedPath_) {
     this.selectedPath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.selectedPath_, 'selected-path');
     this.selectedPath_.stroke(null)/*.fill(/!** @type {acgraph.vector.Fill} *!/(this.getOption('rowSelectedFill')))*/.zIndex(3);
   }
   return this.selectedPath_;
@@ -1549,6 +1560,7 @@ anychart.ganttModule.BaseGrid.prototype.getSelectedPath = function() {
 anychart.ganttModule.BaseGrid.prototype.getRowStrokePath = function() {
   if (!this.rowStrokePath_) {
     this.rowStrokePath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.rowStrokePath_, 'row-stroke-path');
     this.rowStrokePath_.stroke(/** @type {acgraph.vector.Stroke} */ (this.getOption('rowStroke'))).zIndex(4);
   }
   return this.rowStrokePath_;
@@ -1563,6 +1575,7 @@ anychart.ganttModule.BaseGrid.prototype.getRowStrokePath = function() {
 anychart.ganttModule.BaseGrid.prototype.getEditStructurePreviewPath_ = function() {
   if (!this.editStructurePreviewPath_) {
     this.editStructurePreviewPath_ = this.getEditLayer().path();
+    anychart.utils.nameElement(this.editStructurePreviewPath_, 'edit-structure-preview-path');
   }
   return this.editStructurePreviewPath_;
 };
@@ -1575,6 +1588,7 @@ anychart.ganttModule.BaseGrid.prototype.getEditStructurePreviewPath_ = function(
 anychart.ganttModule.BaseGrid.prototype.getHeaderSeparationPath = function() {
   if (!this.headerSeparationPath_) {
     this.headerSeparationPath_ = /** @type {acgraph.vector.Path} */ (this.getCellsLayer().path());
+    anychart.utils.nameElement(this.headerSeparationPath_, 'header-separation-path');
     this.headerSeparationPath_.zIndex(40);
   }
   return this.headerSeparationPath_;
