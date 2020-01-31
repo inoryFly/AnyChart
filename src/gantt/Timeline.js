@@ -1673,7 +1673,6 @@ anychart.ganttModule.TimeLine.prototype.scale = function(opt_value) {
 anychart.ganttModule.TimeLine.prototype.scaleInvalidated_ = function(event) {
   if (event.hasSignal(anychart.Signal.NEEDS_RECALCULATION)) {
     this.milestonePreviewLabelsCache_.clear();
-    console.log('Cache cleared');
     this.invalidate(anychart.ConsistencyState.TIMELINE_SCALES | anychart.ConsistencyState.TIMELINE_MARKERS, anychart.Signal.NEEDS_REDRAW);
   }
 };
@@ -5332,7 +5331,6 @@ anychart.ganttModule.TimeLine.prototype.markersInvalidated = function() {
 anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
   if (event.hasSignal(anychart.Signal.BOUNDS_CHANGED)) {
     this.milestonePreviewLabelsCache_.clear();
-    console.log('Cache cleared on labels invalidation');
   }
   this.invalidate(anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW);
 };
@@ -5399,6 +5397,7 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
  */
 anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
   var depthOption = this.milestones().preview().getOption('depth');
+  // TODO: remove this checks, as they are not needed, probably.
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
       (depth <= depthOption);
 
