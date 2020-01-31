@@ -542,12 +542,14 @@ anychart.timelineModule.Chart.prototype.prepareSeries = function() {
 
     // this.setSeriesAutoDirection(series);
 
+    //region obtaining drawing plan for series
+    var drawingPlan = series.getScatterDrawingPlan(false, true);
+
+    // This method should be called after getScatterDrawingPlan, to operate updated data.
     var minMax = this.getSeriesMinMaxValues(series);
     dateMin = Math.min(dateMin, minMax.min);
     dateMax = Math.max(dateMax, minMax.max);
 
-    //region obtaining drawing plan for series
-    var drawingPlan = series.getScatterDrawingPlan(false, true);
     this.drawingPlans.push(drawingPlan);
     if (seriesType == anychart.enums.TimelineSeriesType.RANGE) {
       this.drawingPlansRange.push(drawingPlan);
@@ -563,15 +565,13 @@ anychart.timelineModule.Chart.prototype.prepareSeries = function() {
 
 /**
  * Returns min and max timestamps for series.
- * @param {anychart.core.series.Base} series
+ * @param {anychart.core.series.Cartesian.DrawingPlan} series
  * @return {{min: number, max: number}}
  */
 anychart.timelineModule.Chart.prototype.getSeriesMinMaxValues = function(series) {
   var dateMin = +Infinity;
   var dateMax = -Infinity;
-  // Really bad move, consider achieving the goal (correct scale min/max after series.data() method call) in a different way.
-  series.drawingPlan = null;
-  //var it = series.data().getIterator();
+
   var it = series.getResetIterator();
   var seriesType = series.seriesType();
 
