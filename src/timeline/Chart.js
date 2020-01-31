@@ -43,6 +43,10 @@ anychart.timelineModule.Chart = function() {
   this.setupCreated('scale', this.xScale_);
   this.initScale_(this.xScale_);
 
+  /*
+    Axis listener should be attached first to scale, so that when chart starts redrawing
+    on scale signal, axis is invalidated and will be redrawn correctly.
+   */
   var axis = this.axis();
   axis.scale(this.xScale_);
 
@@ -565,13 +569,12 @@ anychart.timelineModule.Chart.prototype.prepareSeries = function() {
 
 /**
  * Returns min and max timestamps for series.
- * @param {anychart.core.series.Cartesian.DrawingPlan} series
+ * @param {anychart.core.series.Base} series
  * @return {{min: number, max: number}}
  */
 anychart.timelineModule.Chart.prototype.getSeriesMinMaxValues = function(series) {
   var dateMin = +Infinity;
   var dateMax = -Infinity;
-
   var it = series.getResetIterator();
   var seriesType = series.seriesType();
 
