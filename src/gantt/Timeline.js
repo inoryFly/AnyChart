@@ -4552,8 +4552,6 @@ anychart.ganttModule.TimeLine.prototype.drawAsMilestonePreview_ = function(dataI
       bounds = this.fixBounds_(el, bounds, dataItem, void 0, isSelected);
 
       var tag = this.createTag(dataItem, el, bounds);
-      var curRow = this.controller.getIndexByHeight(bounds.top - this.headerHeight());
-      tag['rowNumber'] = curRow;
       this.setRelatedBounds_(dataItem, bounds);
       el.rendering().callDrawer(dataItem, bounds, tag, void 0, isSelected, initializerUid);
     }
@@ -5208,7 +5206,7 @@ anychart.ganttModule.TimeLine.prototype.initLayersStructure = function(base) {
 /**
  * @override
  */
-anychart.ganttModule.TimeLine.prototype.labelsInvalidated = function(event) {
+anychart.ganttModule.TimeLine.prototype.labelsInvalidated = function() {
   if (this.hasInvalidationState(anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS)) {
     this.drawLabels_();
     this.markConsistent(anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS);
