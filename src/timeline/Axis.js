@@ -703,9 +703,10 @@ anychart.timelineModule.Axis.prototype.provideMeasurements = function() {
 
 /** @inheritDoc */
 anychart.timelineModule.Axis.prototype.disposeInternal = function() {
-  goog.disposeAll(this.ticks_, this.axisPath_, this.labelsSettings_, this.texts_);
+  goog.disposeAll(this.ticks_, this.axisPath_, this.axisStrokePath_, this.labelsSettings_, this.texts_);
   this.ticks_ = null;
   this.axisPath_ = null;
+  this.axisStrokePath_ = null;
   this.labelsSettings_ = null;
   this.texts_.length = 0;
   anychart.timelineModule.Axis.base(this, 'disposeInternal');
