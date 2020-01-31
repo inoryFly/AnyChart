@@ -3,6 +3,7 @@ goog.provide('anychart.resourceModule.AvailabilityStorage');
 goog.require('goog.date.UtcDateTime');
 
 
+
 //region -- Constructor.
 /**
  * Stores availability info.
@@ -116,6 +117,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.processAvailability_ = fun
   }
 };
 
+
 /**
  * Initializes this instance as a yearly-periodic availability.
  * @param {*} on
@@ -124,7 +126,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.processAvailability_ = fun
  * @private
  */
 anychart.resourceModule.AvailabilityStorage.prototype.initYearly_ = function(on, from, to) {
-  this.applies_ = this.appliesByDAY;
+  this.applies_ = this.appliesByDay_;
   on = anychart.format.parseDateTime(on, anychart.resourceModule.Calendar.DATE_FORMAT, anychart.resourceModule.Calendar.BASE_DATE);
   if (on) {
     this.merge_ = this.mergeTime_;
@@ -133,7 +135,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.initYearly_ = function(on,
     this.from_ = timeRange[0];
     this.to_ = timeRange[1];
   } else {
-    this.merge_ = this.replaceDAY;
+    this.merge_ = this.replaceDay_;
     this.on_ = null;
     var tmp = anychart.format.parseDateTime(from, anychart.resourceModule.Calendar.DATE_FORMAT, anychart.resourceModule.Calendar.BASE_DATE);
     tmp = tmp ? new goog.date.UtcDateTime(tmp) : anychart.resourceModule.Calendar.MINIMUM_DATE;
@@ -154,7 +156,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.initYearly_ = function(on,
  * @private
  */
 anychart.resourceModule.AvailabilityStorage.prototype.initWeekly_ = function(on, from, to) {
-  this.applies_ = this.appliesByWeekDAY;
+  this.applies_ = this.appliesByWeekDay_;
   this.merge_ = this.mergeTime_;
   on = this.toElement_(on, 6, NaN);
   this.on_ = isNaN(on) ? null : on;
@@ -181,7 +183,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.initNonPeriodic_ = functio
     this.from_ = timeRange[0];
     this.to_ = timeRange[1];
   } else {
-    this.merge_ = this.replaceDAY;
+    this.merge_ = this.replaceDay_;
     this.on_ = null;
     var tmp = anychart.format.parseDateTime(from);
     tmp = tmp ? new goog.date.UtcDateTime(tmp) : anychart.resourceModule.Calendar.MINIMUM_DATE;
@@ -211,7 +213,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.withinRange_ = function(da
  * @return {boolean}
  * @private
  */
-anychart.resourceModule.AvailabilityStorage.prototype.appliesByWeekDAY = function(date) {
+anychart.resourceModule.AvailabilityStorage.prototype.appliesByWeekDay_ = function(date) {
   return this.withinRange_(date) && (goog.isNull(this.on_) || ((date.getUTCDay() + 6) % 7) == this.on_);
 };
 
@@ -222,7 +224,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.appliesByWeekDAY = functio
  * @return {boolean}
  * @private
  */
-anychart.resourceModule.AvailabilityStorage.prototype.appliesByDAY = function(date) {
+anychart.resourceModule.AvailabilityStorage.prototype.appliesByDay_ = function(date) {
   if (!this.withinRange_(date)) return false;
   if (this.on_) {
     return (date.getUTCMonth() == this.on_.getUTCMonth() &&
@@ -309,7 +311,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.mergeTime_ = function(prev
  * @return {Array}
  * @private
  */
-anychart.resourceModule.AvailabilityStorage.prototype.replaceDAY = function(result, date) {
+anychart.resourceModule.AvailabilityStorage.prototype.replaceDay_ = function(result, date) {
   result.length = 0;
   if (!this.holidays)
     result.push([date.getTime(), date.getTime() + anychart.resourceModule.Calendar.MS_IN_DAY - anychart.resourceModule.Calendar.MS_IN_MINUTE]);
