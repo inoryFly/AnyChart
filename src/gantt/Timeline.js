@@ -5431,6 +5431,11 @@ anychart.ganttModule.TimeLine.prototype.getTagRow = function(tag) {
 };
 
 
+/**
+ * Applies cache to the tag.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag
+ * @param {Object} cache - Object, containing enabled state, width and height.
+ */
 anychart.ganttModule.TimeLine.prototype.applyTagCache = function(tag, cache) {
   if (!goog.isDef(cache)) {
     return;
