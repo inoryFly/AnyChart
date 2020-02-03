@@ -1952,6 +1952,39 @@ anychart.ganttModule.TimeLine.prototype.markers = function(opt_value) {
 //endregion
 //region -- Paths getters.
 /**
+ * Getter for this.workingPath_.
+ * @return {acgraph.vector.Path}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.getWorkingPath_ = function() {
+  if (!this.workingPath_) {
+    this.workingPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
+    this.workingPath_.zIndex(0);
+    anychart.utils.nameElement(this.workingPath_, 'working-path');
+    this.workingPath_.stroke('none').fill('pink 0.5');
+  }
+  return this.workingPath_;
+};
+
+
+/**
+ * Getter for this.holidaysPath_.
+ * @return {acgraph.vector.Path}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.getHolidaysPath_ = function() {
+  if (!this.holidaysPath_) {
+    this.holidaysPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
+    this.holidaysPath_.zIndex(1);
+    anychart.utils.nameElement(this.holidaysPath_, 'holidays-path');
+    this.holidaysPath_.stroke('none').fill('lightgreen 0.5');
+  }
+  return this.holidaysPath_;
+};
+
+
+
+/**
  * Getter for this.separationPath_.
  * @return {acgraph.vector.Path}
  * @private
@@ -1960,6 +1993,7 @@ anychart.ganttModule.TimeLine.prototype.getSeparationPath_ = function() {
   if (!this.separationPath_) {
     this.separationPath_ = /** @type {acgraph.vector.Path} */ (this.getClipLayer().path());
     this.separationPath_.zIndex(6);
+    anychart.utils.nameElement(this.separationPath_, 'low-ticks-separation-path');
     this.separationPath_.stroke(/** @type {acgraph.vector.Stroke} */(anychart.ganttModule.BaseGrid.getColorResolver('columnStroke', anychart.enums.ColorType.STROKE, false)(this, 0)));
   }
   return this.separationPath_;
@@ -5077,6 +5111,65 @@ anychart.ganttModule.TimeLine.prototype.drawLowTicks_ = function(ticks) {
 };
 
 
+anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
+  if (this.scale_.hasCalendar()) {
+    var calendar = this.scale_.calendar();
+    var workingSchedule = scale.getWorkingSchedule();
+    var workingPath = this.getWorkingPath_().clear();
+    var holidaysPath = this.getHolidaysPath_().clear();
+
+    for (var i = 0; i < workingSchedule.length; i++) {
+      var singleWorkingScheduleItemInfo = workingSchedule[i];
+
+      var start = singleWorkingScheduleItemInfo.start;
+      var end = singleWorkingScheduleItemInfo.end;
+
+      var top = this.pixelBoundsCache.top + /** @type {number} */ (this.headerHeight()) + 1;
+      var bottom = this.pixelBoundsCache.top + this.pixelBoundsCache.height;
+
+      if (calendar.hasWorkingTime(start, end)) {
+        var workingTime = singleWorkingScheduleItemInfo.workingTime;
+
+        for (var j = 0; j < workingTime.length; j++) {
+          var work = workingTime[j];
+          var wStart = work[0];
+          var wEnd = work[1];
+
+          var startRatio = this.scale_.timestampToRatio(wStart);
+          var endRatio = this.scale_.timestampToRatio(wEnd);
+
+          var pxStart = this.pixelBoundsCache.left + this.pixelBoundsCache.width * startRatio;
+          var pxEnd = this.pixelBoundsCache.left + this.pixelBoundsCache.width * endRatio;
+          pxStart = anychart.utils.applyPixelShift(pxStart, 1);
+          end = anychart.utils.applyPixelShift(pxEnd, 1);
+          workingPath
+            .moveTo(pxStart, top)
+            .lineTo(pxEnd, top)
+            .lineTo(pxEnd, bottom)
+            .lineTo(pxStart, bottom)
+            .close();
+        }
+      } else {
+        var hStartRatio = this.scale_.timestampToRatio(start);
+        var hEndRatio = this.scale_.timestampToRatio(end);
+
+        var hPxStart = this.pixelBoundsCache.left + this.pixelBoundsCache.width * hStartRatio;
+        var hPxEnd = this.pixelBoundsCache.left + this.pixelBoundsCache.width * hEndRatio;
+        hPxStart = anychart.utils.applyPixelShift(hPxStart, 1);
+        hPxEnd = anychart.utils.applyPixelShift(hPxEnd, 1);
+        holidaysPath
+          .moveTo(hPxStart, top)
+          .lineTo(hPxEnd, top)
+          .lineTo(hPxEnd, bottom)
+          .lineTo(hPxStart, bottom)
+          .close();
+      }
+    }
+
+  }
+};
+
+
 /**
  * Recalculates scale depending on current controller's state.
  */
@@ -5160,12 +5253,27 @@ anychart.ganttModule.TimeLine.prototype.appearanceInvalidated = function() {
 
 
 /**
+ * Inner getter for this.calendarLayer_.
+ * @return {acgraph.vector.Layer}
+ */
+anychart.ganttModule.TimeLine.prototype.getCalendarLayer = function() {
+  if (!this.calendarLayer_) {
+    this.calendarLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.calendarLayer_, 'calendar-layer');
+    this.calendarLayer_.zIndex(anychart.ganttModule.BaseGrid.DRAW_Z_INDEX - 2);
+  }
+  return this.calendarLayer_;
+};
+
+
+/**
  * Inner getter for this.rangeLineMarkersLayer_.
  * @return {acgraph.vector.Layer}
  */
 anychart.ganttModule.TimeLine.prototype.getRangeLineMarkersLayer = function() {
   if (!this.rangeLineMarkersLayer_) {
     this.rangeLineMarkersLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.rangeLineMarkersLayer_, 'range-line-markers-layer');
     this.rangeLineMarkersLayer_.zIndex(anychart.ganttModule.BaseGrid.DRAW_Z_INDEX - 1);
   }
   return this.rangeLineMarkersLayer_;
@@ -5179,6 +5287,7 @@ anychart.ganttModule.TimeLine.prototype.getRangeLineMarkersLayer = function() {
 anychart.ganttModule.TimeLine.prototype.getTextMarkersLayer = function() {
   if (!this.textMarkersLayer_) {
     this.textMarkersLayer_ = /** @type {acgraph.vector.Layer} */ (acgraph.layer());
+    anychart.utils.nameElement(this.textMarkersLayer_, 'text-markers-layer');
     this.textMarkersLayer_.zIndex(anychart.ganttModule.BaseGrid.DRAW_Z_INDEX + 1);
   }
   return this.textMarkersLayer_;
@@ -5191,6 +5300,7 @@ anychart.ganttModule.TimeLine.prototype.getTextMarkersLayer = function() {
 anychart.ganttModule.TimeLine.prototype.initLayersStructure = function(base) {
   base
       .addChild(/** @type {!acgraph.vector.Layer} */ (this.getCellsLayer()))
+      .addChild(/** @type {!acgraph.vector.Layer} */ (this.getCalendarLayer()))
       .addChild(/** @type {!acgraph.vector.Layer} */ (this.getRangeLineMarkersLayer()))
       .addChild(/** @type {!acgraph.vector.Layer} */ (this.getDrawLayer()))
       .addChild(/** @type {!acgraph.vector.Layer} */ (this.getTextMarkersLayer()))
@@ -5241,7 +5351,9 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
     header.draw();
     header.resumeSignalsDispatching(false);
 
+    console.log('Drawing low ticks', levelData['unit'], levelData['count'])
     this.drawLowTicks_(ticks);
+    this.drawCalendar_();
 
     var totalRange = this.scale_.getTotalRange();
     var visibleRange = this.scale_.getRange();

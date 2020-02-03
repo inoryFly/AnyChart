@@ -1219,6 +1219,16 @@ anychart.scales.GanttDateTime.prototype.getLevelsData = function() {
 };
 
 /**
+ * TODO.
+ *
+ * @return {boolean}
+ */
+anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
+  return !!this.calendar_;
+};
+
+
+/**
  *
  * @return {Array} - TODO .
  */
