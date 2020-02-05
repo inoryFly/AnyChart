@@ -5110,11 +5110,14 @@ anychart.ganttModule.TimeLine.prototype.drawLowTicks_ = function(ticks) {
   }
 };
 
-
+/**
+ * TODO.
+ * @private
+ */
 anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
   if (this.scale_.hasCalendar()) {
     var calendar = this.scale_.calendar();
-    var workingSchedule = scale.getWorkingSchedule();
+    var workingSchedule = this.scale_.getWorkingSchedule();
     var workingPath = this.getWorkingPath_().clear();
     var holidaysPath = this.getHolidaysPath_().clear();
 
@@ -5351,7 +5354,7 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
     header.draw();
     header.resumeSignalsDispatching(false);
 
-    console.log('Drawing low ticks', levelData['unit'], levelData['count'])
+    console.log('Drawing low ticks', levelData['unit'], levelData['count']);
     this.drawLowTicks_(ticks);
     this.drawCalendar_();
 

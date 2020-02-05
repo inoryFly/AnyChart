@@ -174,7 +174,7 @@ anychart.scales.GanttDateTime = function() {
    * @type {number}
    * @private
    */
-  this.maxTicksCount_ = 1000;
+  this.maxTicksCount_ = anychart.scales.GanttDateTime.DEFAULT_MAX_TICKS_COUNT;
 
   /**
    * Calendar.
@@ -266,6 +266,12 @@ anychart.scales.GanttDateTime.MILLISECONDS_IN_DAY = anychart.scales.GanttDateTim
  * @type {number}
  */
 anychart.scales.GanttDateTime.DEFAULT_ZOOM_FACTOR = 1.25;
+
+/**
+ * Hardcoded default value of maximum ticks count.
+ * @type {number}
+ */
+anychart.scales.GanttDateTime.DEFAULT_MAX_TICKS_COUNT = 200;
 
 
 /**
@@ -1089,8 +1095,8 @@ anychart.scales.GanttDateTime.prototype.getTicks = function(pixStart, pixEnd, un
   var current, currentMs;
   if (this.fiscalYearStartMonth_ > 1 &&
       (unit == anychart.enums.Interval.YEAR ||
-          unit == anychart.enums.Interval.SEMESTER ||
-          unit == anychart.enums.Interval.QUARTER)) {
+      unit == anychart.enums.Interval.SEMESTER ||
+      unit == anychart.enums.Interval.QUARTER)) {
     var fiscalStart = anychart.utils.shiftFiscalDate(start, this.fiscalYearStartMonth_);
     if (fiscalStart > start) {
       var invertedInterval = interval.getInverse();
