@@ -13,10 +13,11 @@ goog.require('goog.date.UtcDateTime');
  */
 anychart.resourceModule.AvailabilityStorage = function(availability) {
   /**
-   * If the passed availability is a holiday period.
+   * If the passed availability is a working period.
    * @type {boolean}
+   * @private
    */
-  this.holidays = false;
+  this.isWorking_ = true;
 
   /**
    * When the availability starts to make effect.
@@ -75,7 +76,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.applyToSchedule = function
  */
 anychart.resourceModule.AvailabilityStorage.prototype.processAvailability_ = function(availability) {
   var isWorking = availability['isWorking'];
-  this.holidays = goog.isDef(isWorking) ? !isWorking : false;
+  this.isWorking_ = goog.isDef(isWorking) ? isWorking : true;
 
   var period = anychart.enums.normalizeAvailabilityPeriod(availability['each']);
   switch (period) {
@@ -269,11 +270,11 @@ anychart.resourceModule.AvailabilityStorage.prototype.mergeTime_ = function(prev
     if (tmp[0] > to) { // no overlap
       // if current range is a holiday - nothing changes
       // otherwise we just add it as is - it overlaps nothing
-      if (!this.holidays) {
+      if (this.isWorking_) {
         result.push([from, to]);
       }
     } else { // current range overlaps at least one range of prevResult
-      if (this.holidays) { // we should reduce that range
+      if (!this.isWorking_) { // we should reduce that range
         if (tmp[0] < from) { // there is a segment in front
           result.push([tmp[0], from]);
         }
@@ -297,7 +298,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.mergeTime_ = function(prev
     for (; i < prevResult.length; i++) {
       result.push(prevResult[i]);
     }
-  } else if (!this.holidays) {
+  } else if (this.isWorking_) {
     result.push([from, to]);
   }
   return result;
@@ -313,7 +314,7 @@ anychart.resourceModule.AvailabilityStorage.prototype.mergeTime_ = function(prev
  */
 anychart.resourceModule.AvailabilityStorage.prototype.replaceDay_ = function(result, date) {
   result.length = 0;
-  if (!this.holidays)
+  if (this.isWorking_)
     result.push([date.getTime(), date.getTime() + anychart.resourceModule.Calendar.MS_IN_DAY - anychart.resourceModule.Calendar.MS_IN_MINUTE]);
   return result;
 };

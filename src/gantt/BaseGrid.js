@@ -1488,6 +1488,24 @@ anychart.ganttModule.BaseGrid.prototype.getClipLayer = function() {
 
 
 /**
+ * Applies clip when it's necessary.
+ *
+ * @param {anychart.math.Rect} clipRect - Clip bounds to be applied.
+ */
+anychart.ganttModule.BaseGrid.prototype.applyClip = function(clipRect) {
+  this.getClipLayer().clip(clipRect);
+  // this.getCellsLayer().clip(clipRect);
+
+  if (this.rangeLineMarkersLayer_) //Data grid doesn't create own markers layer.
+    this.rangeLineMarkersLayer_.clip(clipRect);
+  if (this.textMarkersLayer_) //Data grid doesn't create own markers layer.
+    this.textMarkersLayer_.clip(clipRect);
+
+  this.getDrawLayer().clip(clipRect);
+};
+
+
+/**
  * Inner getter for this.scrollsLayer_.
  * @return {acgraph.vector.Layer}
  */
@@ -2299,15 +2317,7 @@ anychart.ganttModule.BaseGrid.prototype.drawRowFills = function() {
 
   var clipRect = new anychart.math.Rect(this.pixelBoundsCache.left, this.pixelBoundsCache.top - 1,
       this.pixelBoundsCache.width, totalTop - this.pixelBoundsCache.top + 1);
-  this.getClipLayer().clip(clipRect);
-  // this.getCellsLayer().clip(clipRect);
-
-  if (this.rangeLineMarkersLayer_) //Data grid doesn't create own markers layer.
-    this.rangeLineMarkersLayer_.clip(clipRect);
-  if (this.textMarkersLayer_) //Data grid doesn't create own markers layer.
-    this.textMarkersLayer_.clip(clipRect);
-
-  this.getDrawLayer().clip(clipRect);
+  this.applyClip(clipRect);
 
   return clipRect;
 };

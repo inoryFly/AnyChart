@@ -723,9 +723,6 @@ anychart.scales.GanttDateTime.prototype.normalizeLevels_ = function(value) {
  */
 anychart.scales.GanttDateTime.prototype.handleCalendarSignal_ = function(e) {
   if (e.hasSignal(anychart.Signal.NEEDS_REAPPLICATION)) {
-    // this.dropGrids_();
-    // this.invalidate(anychart.ConsistencyState.DTWC_TS_GRID, anychart.Signal.NEEDS_REAPPLICATION);
-    console.log('Calendar signal!!!');
     this.dispatchSignal(anychart.Signal.NEEDS_REAPPLICATION);
   }
 };
@@ -1010,10 +1007,6 @@ anychart.scales.GanttDateTime.prototype.calendar = function(opt_value) {
       this.calendar_ = opt_value;
       if (this.calendar_)
         this.calendar_.listenSignals(this.handleCalendarSignal_, this);
-      // this.dropGrids_();
-      // this.invalidate(
-      //     anychart.ConsistencyState.DTWC_TS_GRID,
-      //     anychart.Signal.NEEDS_RECALCULATION | anychart.Signal.NEEDS_REAPPLICATION);
       this.dispatchSignal(anychart.Signal.NEEDS_REAPPLICATION);
     }
     return this;
@@ -1235,17 +1228,16 @@ anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
 
 
 /**
+ * Calculates working schedule.
  *
- * @return {Array} - TODO .
+ * @return {Array.<anychart.resourceModule.Calendar.ScheduleItem>} - Gets current working schedule
+ *  defined by calendar settings.
  */
 anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function() {
   if (this.calendar_) {
     this.calculate();
     var r = this.getRange();
-    var min = r['min'];
-    var max = r['max'];
-
-    return this.calendar_.getWorkingSchedule(min, max);
+    return this.calendar_.getWorkingSchedule(r['min'], r['max']);
   }
   return [];
 };

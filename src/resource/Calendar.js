@@ -107,7 +107,8 @@ anychart.resourceModule.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.N
  *    to: (Date|number|string|undefined),
  *    starts: (Date|number|string|undefined),
  *    ends: (Date|number|string|undefined),
- *    isWorking: (boolean|undefined)
+ *    isWorking: (boolean|undefined),
+ *    isHoliday: (boolean|undefined)
  * }}
  */
 anychart.resourceModule.Calendar.Availability;
