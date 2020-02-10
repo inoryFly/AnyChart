@@ -95,6 +95,9 @@ anychart.timelineModule.Chart = function() {
    */
   this.autoChartTranslating = true;
 
+  this.minOffset = 0;
+  this.maxOffset = 0;
+
   this.rangeSeriesList = [];
   this.momentSeriesList = [];
 
@@ -544,8 +547,6 @@ anychart.timelineModule.Chart.prototype.prepareSeries = function() {
         break;
     }
 
-    // this.setSeriesAutoDirection(series);
-
     //region obtaining drawing plan for series
     var drawingPlan = series.getScatterDrawingPlan(false, true);
 
@@ -945,20 +946,29 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
       }
     }
 
+    // var halfHeight = this.dataBounds.height / 2;
     var halfHeight = this.dataBounds.height / 2;
-    if (this.autoChartTranslating) {
-      if (this.totalRange.sY > -halfHeight && this.totalRange.eY > halfHeight) {
-        this.verticalTranslate = this.totalRange.sY + this.dataBounds.height / 2 - halfAxisHeight - scrollerHeightBottom;
-        this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
-      } else if (this.totalRange.eY < halfHeight && this.totalRange.sY < -halfHeight) {//white space over the axis
-        this.verticalTranslate = this.totalRange.eY - this.dataBounds.height / 2 + halfAxisHeight + scrollerHeightTop;
-        this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
-      }
+    if (this.totalRange.sY >= -halfHeight && this.totalRange.eY <= halfHeight) {
+      this.minOffset = 0;
+      this.maxOffset = 0;
+    } else {
+      this.minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
+      this.maxOffset = this.totalRange.eY - halfHeight;
     }
-    // center timeline if there is empty space both above and under
-    if (this.totalRange.sY > -halfHeight && this.totalRange.eY < halfHeight) {
-      this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
-    }
+
+    // if (this.autoChartTranslating) {
+    //   if (this.totalRange.sY > -halfHeight && this.totalRange.eY > halfHeight) {
+    //     this.verticalTranslate = this.totalRange.sY + this.dataBounds.height / 2 - halfAxisHeight - scrollerHeightBottom;
+    //     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    //   } else if (this.totalRange.eY < halfHeight && this.totalRange.sY < -halfHeight) {//white space over the axis
+    //     this.verticalTranslate = this.totalRange.eY - this.dataBounds.height / 2 + halfAxisHeight + scrollerHeightTop;
+    //     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    //   }
+    // }
+    // // center timeline if there is empty space both above and under
+    // if (this.totalRange.sY > -halfHeight && this.totalRange.eY < halfHeight) {
+    //   this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    // }
   }
 };
 
@@ -1031,6 +1041,7 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
     this.dataBounds = bounds.clone();
+    console.log(this.dataBounds);
     this.invalidate(anychart.ConsistencyState.AXES_CHART_AXES | anychart.ConsistencyState.SERIES_CHART_SERIES |
         anychart.ConsistencyState.AXES_CHART_AXES_MARKERS | anychart.ConsistencyState.CARTESIAN_X_SCROLLER);
     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL);
@@ -1064,11 +1075,13 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
     }
 
     //fix vertical translate going places
-    if (this.totalRange && (this.verticalTranslate + this.dataBounds.height / 2 > Math.max(this.totalRange.eY, this.dataBounds.height / 2))) {
-      this.verticalTranslate = Math.max(this.totalRange.eY - this.dataBounds.height / 2, 0);
-    } else if (this.totalRange && (this.verticalTranslate - this.dataBounds.height / 2 < Math.min(this.totalRange.sY, -(this.dataBounds.height / 2)))) {
-      this.verticalTranslate = Math.min(this.totalRange.sY + this.dataBounds.height / 2, 0);
-    }
+    // if (this.totalRange && (this.verticalTranslate + this.dataBounds.height / 2 > Math.max(this.totalRange.eY, this.dataBounds.height / 2))) {
+    //   this.verticalTranslate = Math.max(this.totalRange.eY - this.dataBounds.height / 2, 0);
+    // } else if (this.totalRange && (this.verticalTranslate - this.dataBounds.height / 2 < Math.min(this.totalRange.sY, -(this.dataBounds.height / 2)))) {
+    //   this.verticalTranslate = Math.min(this.totalRange.sY + this.dataBounds.height / 2, 0);
+    // }
+
+    this.verticalTranslate = goog.math.clamp(this.verticalTranslate, this.minOffset, this.maxOffset);
 
     matrix[4] = -this.horizontalTranslate;
     matrix[5] = this.verticalTranslate;
@@ -1259,7 +1272,6 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
   var dy = y - this.verticalTranslate;
 
   if (this.timelineLayer_) {
-    var matrix = this.timelineLayer_.getTransformationMatrix();
     this.horizontalTranslate = x;
     this.verticalTranslate = y;
 
@@ -1273,12 +1285,13 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
     }
 
     if (dy != 0) {
-      if (this.verticalTranslate + this.dataBounds.height / 2 > Math.max(this.totalRange.eY, (this.dataBounds.height / 2))) {
-        this.verticalTranslate = Math.max(this.totalRange.eY, (this.dataBounds.height / 2)) - this.dataBounds.height / 2;
-      }
-      else if (this.verticalTranslate - this.dataBounds.height / 2 < Math.min(this.totalRange.sY, -(this.dataBounds.height / 2))) {
-        this.verticalTranslate = Math.min(this.totalRange.sY, -(this.dataBounds.height / 2)) + this.dataBounds.height / 2;
-      }
+      this.verticalTranslate = goog.math.clamp(y, this.minOffset, this.maxOffset);
+      // if (this.verticalTranslate + this.dataBounds.height / 2 > Math.max(this.totalRange.eY, (this.dataBounds.height / 2))) {
+      //   this.verticalTranslate = Math.max(this.totalRange.eY, (this.dataBounds.height / 2)) - this.dataBounds.height / 2;
+      // }
+      // else if (this.verticalTranslate - this.dataBounds.height / 2 < Math.min(this.totalRange.sY, -(this.dataBounds.height / 2))) {
+      //   this.verticalTranslate = Math.min(this.totalRange.sY, -(this.dataBounds.height / 2)) + this.dataBounds.height / 2;
+      // }
     }
 
     var leftDate = this.scale().inverseTransform(this.horizontalTranslate / this.dataBounds.width);
