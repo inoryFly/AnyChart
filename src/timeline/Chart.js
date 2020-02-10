@@ -1529,21 +1529,25 @@ anychart.timelineModule.Chart.prototype.fitAll = function() {
 anychart.timelineModule.Chart.prototype.scroll = function(opt_value) {
   if (goog.isDef(opt_value)) {
     opt_value = +opt_value;
-    if (this.scroll_ != opt_value) {
-      this.scroll_ = opt_value;
-      if (this.scroll_ > 0) {
-        this.verticalTranslate = - this.dataBounds.height / 2;
-      } else if (this.scroll_ < 0) {
-        this.verticalTranslate = this.dataBounds.height / 2;
-      } else {
-        this.verticalTranslate = 0;
-      }
-      this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    if (this.verticalTranslate != opt_value) {
+      this.moveTo(this.horizontalTranslate, opt_value);
       return this;
     }
+    // if (this.scroll_ != opt_value) {
+    //   this.scroll_ = opt_value;
+    //   if (this.scroll_ > 0) {
+    //     this.verticalTranslate = - this.dataBounds.height / 2;
+    //   } else if (this.scroll_ < 0) {
+    //     this.verticalTranslate = this.dataBounds.height / 2;
+    //   } else {
+    //     this.verticalTranslate = 0;
+    //   }
+    //   this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    //   return this;
+    // }
   }
 
-  return this.scroll_;
+  return this.verticalTranslate;
 };
 
 
