@@ -952,18 +952,18 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
       var lookingUp = intersectingBounds.momentUp.length + intersectingBounds.rangeUp.length;
       var lookingDown = intersectingBounds.momentDown.length + intersectingBounds.rangeDown.length;
       if (lookingUp && !lookingDown) {
-        this.minOffset = halfHeight;
-        this.maxOffset = halfHeight;
+        this.minOffset = halfHeight - scrollerHeightBottom;
+        this.maxOffset = halfHeight - scrollerHeightBottom;
       } else if (!lookingUp && lookingDown) {
-        this.minOffset = -halfHeight;
-        this.maxOffset = -halfHeight;
+        this.minOffset = -halfHeight - scrollerHeightTop;
+        this.maxOffset = -halfHeight - scrollerHeightTop;
       } else if (lookingUp && lookingDown) {
         this.minOffset = 0;
         this.maxOffset = 0;
       }
     } else {
       this.minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
-      this.maxOffset = this.totalRange.eY - halfHeight;
+      this.maxOffset = this.totalRange.eY - halfHeight - scrollerHeightTop;
     }
 
     // if (this.autoChartTranslating) {
