@@ -95,8 +95,8 @@ anychart.timelineModule.Chart = function() {
    */
   this.autoChartTranslating = true;
 
-  this.minOffset = 0;
-  this.maxOffset = 0;
+  this.minVerticalOffset = 0;
+  this.maxVerticalOffset = 0;
 
   this.rangeSeriesList = [];
   this.momentSeriesList = [];
@@ -954,18 +954,14 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
       var lookingUp = intersectingBounds.momentUp.length + intersectingBounds.rangeUp.length;
       var lookingDown = intersectingBounds.momentDown.length + intersectingBounds.rangeDown.length;
       if (lookingUp && !lookingDown) {
-        this.minOffset = minOffset;
-        this.maxOffset = minOffset;
+        this.verticalOffsets(minOffset, minOffset);
       } else if (!lookingUp && lookingDown) {
-        this.minOffset = maxOffset;
-        this.maxOffset = maxOffset;
+        this.verticalOffsets(maxOffset, maxOffset);
       } else if (lookingUp && lookingDown) {
-        this.minOffset = 0;
-        this.maxOffset = 0;
+        this.verticalOffsets(0, 0);
       }
     } else {
-      this.minOffset = minOffset;
-      this.maxOffset = maxOffset;
+      this.verticalOffsets(minOffset, maxOffset);
     }
 
     // if (this.autoChartTranslating) {
@@ -982,6 +978,20 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
     //   this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
     // }
   }
+};
+
+
+anychart.timelineModule.Chart.prototype.verticalOffsets = function(min, max) {
+  if (min != this.minVerticalOffset || max != this.maxVerticalOffset) {
+    this.minVerticalOffset = min;
+    this.maxVerticalOffset = max;
+    this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+  }
+
+  return {
+    min: this.minVerticalOffset,
+    max: this.maxVerticalOffset
+  };
 };
 
 
@@ -1093,7 +1103,7 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
     //   this.verticalTranslate = Math.min(this.totalRange.sY + this.dataBounds.height / 2, 0);
     // }
 
-    this.verticalTranslate = goog.math.clamp(this.verticalTranslate, this.minOffset, this.maxOffset);
+    this.verticalTranslate = goog.math.clamp(this.verticalTranslate, this.minVerticalOffset, this.maxVerticalOffset);
 
     matrix[4] = -this.horizontalTranslate;
     matrix[5] = this.verticalTranslate;
@@ -1297,7 +1307,7 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
     }
 
     if (dy != 0) {
-      this.verticalTranslate = goog.math.clamp(y, this.minOffset, this.maxOffset);
+      this.verticalTranslate = goog.math.clamp(y, this.minVerticalOffset, this.maxVerticalOffset);
       // if (this.verticalTranslate + this.dataBounds.height / 2 > Math.max(this.totalRange.eY, (this.dataBounds.height / 2))) {
       //   this.verticalTranslate = Math.max(this.totalRange.eY, (this.dataBounds.height / 2)) - this.dataBounds.height / 2;
       // }
@@ -1470,7 +1480,9 @@ anychart.timelineModule.Chart.prototype.initScale_ = function(scale) {
 anychart.timelineModule.Chart.prototype.scaleInvalidated_ = function(event) {
   if (event.hasSignal(anychart.Signal.NEEDS_RECALCULATION)) {
     this.updateZoomState_();
+    // Reset horizontal translation, because chart should be redrawn to match updated scale range.
     this.moveTo(0, this.verticalTranslate);
+    // this.horizontalTranslate = 0;
     this.invalidate(anychart.ConsistencyState.SCALE_CHART_SCALES | anychart.ConsistencyState.AXES_CHART_AXES, anychart.Signal.NEEDS_REDRAW);
   }
 };
