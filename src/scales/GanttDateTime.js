@@ -1218,7 +1218,7 @@ anychart.scales.GanttDateTime.prototype.getLevelsData = function() {
 };
 
 /**
- * TODO.
+ * Whether scale has calendar initialized.
  *
  * @return {boolean}
  */
@@ -1230,14 +1230,16 @@ anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
 /**
  * Calculates working schedule.
  *
+ * @param {anychart.enums.Interval=} opt_unit - TODO (A.Kudryavtsev): .
+ * @param {number=} opt_count - TODO (A.Kudryavtsev): .
  * @return {Array.<anychart.resourceModule.Calendar.ScheduleItem>} - Gets current working schedule
  *  defined by calendar settings.
  */
-anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function() {
+anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function(opt_unit, opt_count) {
   if (this.calendar_) {
     this.calculate();
     var r = this.getRange();
-    return this.calendar_.getWorkingSchedule(r['min'], r['max']);
+    return this.calendar_.getWorkingSchedule(r['min'], r['max'], opt_unit, opt_count);
   }
   return [];
 };
@@ -1294,11 +1296,6 @@ anychart.scales.GanttDateTime.prototype.ratioForceScroll = function(ratio) {
   }
   return this;
 };
-
-
-//endregion
-//region -- Calendar.
-
 
 
 //endregion

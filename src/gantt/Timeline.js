@@ -336,6 +336,28 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    */
   this.connectors_ = null;
 
+  /**
+   * Currently used low ticks unit.
+   * Used to correctly draw calendar intervals that
+   * depend on current low ticks unit.
+   * Works with this.currentLowerTicksCount_.
+   *
+   * @type {?anychart.enums.Interval}
+   * @private
+   */
+  this.currentLowerTicksUnit_ = null;
+
+  /**
+   * Currently used low ticks count.
+   * Used to correctly draw calendar intervals that
+   * depend on current low ticks count.
+   * Wprks with this.currentLowerTicksUnit_.
+   *
+   * @type {number}
+   * @private
+   */
+  this.currentLowerTicksCount_ = NaN;
+
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['workingFill', 0, 0, 0, function() {
@@ -5160,6 +5182,7 @@ anychart.ganttModule.TimeLine.prototype.applyClip = function(clipRect) {
   this.getCalendarLayer().clip(clipRect);
 };
 
+
 /**
  * Clears calendar drawn.
  *
@@ -5224,8 +5247,8 @@ anychart.ganttModule.TimeLine.prototype.drawWorkingTime_ = function(start, end, 
     var workingEnd = work[1];
     notWorkingEnd = workingStart;
 
-    this.drawCalendarRange_(this.getWorkingPath_(), notWorkingStart, notWorkingEnd);
-    this.drawCalendarRange_(this.getNotWorkingPath_(), workingStart, workingEnd);
+    this.drawCalendarRange_(this.getWorkingPath_(), workingStart, workingEnd);
+    this.drawCalendarRange_(this.getNotWorkingPath_(), notWorkingStart, notWorkingEnd);
 
     notWorkingStart = workingEnd;
   }
@@ -5255,13 +5278,14 @@ anychart.ganttModule.TimeLine.prototype.drawHoliday_ = function(start, end) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
-  if (this.scale_.hasCalendar()) { // Calendar might not had been initialized.
+  if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) { // Calendar might not had been initialized.
     /**
      * Current working schedule for visible range.
      *
      * @type {Array.<anychart.resourceModule.Calendar.ScheduleItem>}
      */
-    var workingSchedule = this.scale_.getWorkingSchedule();
+    var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
+    console.log(workingSchedule);
     this.clearCalendar_();
 
     for (var i = 0; i < workingSchedule.length; i++) {
@@ -5452,15 +5476,17 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
     this.markConsistent(anychart.ConsistencyState.TIMELINE_SCALES);
   }
 
+  var levelsData = this.scale_.getLevelsData();
   if (this.redrawHeader) {
     header.suspendSignalsDispatching();
-    var levelsData = this.scale_.getLevelsData();
     header.setLevels(levelsData);
 
     var ticks = [];
     for (var i = 0; i < levelsData.length; i++) {
       if (header.level(i).enabled()) {
         var levelData = levelsData[i];
+        this.currentLowerTicksUnit_ = levelData['unit'];
+        this.currentLowerTicksCount_ = levelData['count'];
         ticks = this.scale_.getTicks(NaN, NaN, levelData['unit'], levelData['count']);
         break;
       }

@@ -2240,6 +2240,35 @@ anychart.utils.getKeys = function(obj) {
   return res;
 };
 
+/**
+ * Constant that contains map of intervals to define lower interval.
+ * Looks and works like this:
+ *
+ *  DECREASED_INTERVALS['year'] is 'semester'
+ *  DECREASED_INTERVALS['day'] is 'hour'
+ *  DECREASED_INTERVALS['milliseconds'] is indefined.
+ *
+ * In future implementations can consider units count and be turned to
+ * function.
+ *
+ * @const
+ * @type {Object.<anychart.enums.Interval, anychart.enums.Interval>}
+ */
+anychart.utils.DECREASED_INTERVALS = (function() {
+  var map = /** @type {Object.<anychart.enums.Interval, anychart.enums.Interval>} */ ({});
+  map[anychart.enums.Interval.YEAR] = anychart.enums.Interval.SEMESTER;
+  map[anychart.enums.Interval.SEMESTER] = anychart.enums.Interval.QUARTER;
+  map[anychart.enums.Interval.QUARTER] = anychart.enums.Interval.MONTH;
+  map[anychart.enums.Interval.MONTH] = anychart.enums.Interval.WEEK;
+  map[anychart.enums.Interval.WEEK] = anychart.enums.Interval.DAY;
+  map[anychart.enums.Interval.DAY] = anychart.enums.Interval.HOUR;
+  map[anychart.enums.Interval.HOUR] = anychart.enums.Interval.MINUTE;
+  map[anychart.enums.Interval.MINUTE] = anychart.enums.Interval.SECOND;
+  map[anychart.enums.Interval.SECOND] = anychart.enums.Interval.MILLISECOND;
+
+  return map;
+})();
+
 
 /**
  * Returns interval range.
