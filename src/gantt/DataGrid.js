@@ -462,7 +462,7 @@ anychart.ganttModule.DataGrid.prototype.collapseExpandItem = function(itemIndex,
       state = goog.isDef(state) ? state : false;
 
       item.meta(anychart.enums.GanttDataFields.COLLAPSED, state);
-      /** @type {anychart.ganttModule.Chart}*/ (this.interactivityHandler).dispatchDetachedEvent(eventObj);
+      /** @type {anychart.ganttModule.Chart} */ (this.interactivityHandler).dispatchDetachedEvent(eventObj);
     } else if (anychart.ganttModule.BaseGrid.isParent(item)) {
       // Regular expand/collapse condition and action.
 
@@ -635,14 +635,12 @@ anychart.ganttModule.DataGrid.prototype.columnInternal_ = function(opt_indexOrVa
     column.setupInternal(!!opt_default, conf);
     if (column.enabled()) column.container(this.getContentLayer());
     this.columns_[index] = column;
-    this.addSplitter_();
     this.invalidate(anychart.ConsistencyState.DATA_GRID_GRIDS | anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW);
     return this;
   } else {
     if (newColumn) {
       column.container(this.getContentLayer());
       this.columns_[index] = column;
-      this.addSplitter_();
 
       this.invalidate(anychart.ConsistencyState.DATA_GRID_GRIDS | anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW);
       if (this.getOption('fixedColumns')) {
@@ -650,6 +648,14 @@ anychart.ganttModule.DataGrid.prototype.columnInternal_ = function(opt_indexOrVa
         this.interactivityHandler.invalidate(anychart.ConsistencyState.BOUNDS, anychart.Signal.NEEDS_REDRAW);
       }
     }
+
+    /*
+      Create splitters on demand.
+      Because splitters creates only for enabled columns we need check - If another one splitter needed?
+      Then update splitters count.
+     */
+    this.addSplitter_();
+
     return column;
   }
 };
@@ -1023,6 +1029,22 @@ anychart.ganttModule.DataGrid.prototype.columnInvalidated_ = function(event) {
     state |= anychart.ConsistencyState.GRIDS_POSITION;
     if (anychart.isAsync())
       this.partialLabels.reset = true;
+  }
+
+  /*
+    Fix for case when we consequently apply changes to several columns in async mode.
+
+    When second signal arrives first invalidation already took place and second time
+    signal won't be emitted.
+
+    To emit signal which would schedule settings reapplication we need to make data
+    grid consistent again.
+   */
+  if (anychart.isAsync() &&
+      event.hasSignal(anychart.Signal.NEEDS_REDRAW_LABELS) &&
+      this.container()) // This is to avoid invoking chart.drawInternal() before container is set.
+  {
+    this.markConsistent(state);
   }
 
   var redrawChart = false;
