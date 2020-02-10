@@ -948,22 +948,24 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
 
     // var halfHeight = this.dataBounds.height / 2;
     var halfHeight = this.dataBounds.height / 2;
+    var minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
+    var maxOffset = this.totalRange.eY - halfHeight - scrollerHeightTop;
     if (this.totalRange.sY >= -halfHeight && this.totalRange.eY <= halfHeight) {
       var lookingUp = intersectingBounds.momentUp.length + intersectingBounds.rangeUp.length;
       var lookingDown = intersectingBounds.momentDown.length + intersectingBounds.rangeDown.length;
       if (lookingUp && !lookingDown) {
-        this.minOffset = halfHeight - scrollerHeightBottom;
-        this.maxOffset = halfHeight - scrollerHeightBottom;
+        this.minOffset = minOffset;
+        this.maxOffset = minOffset;
       } else if (!lookingUp && lookingDown) {
-        this.minOffset = -halfHeight - scrollerHeightTop;
-        this.maxOffset = -halfHeight - scrollerHeightTop;
+        this.minOffset = maxOffset;
+        this.maxOffset = maxOffset;
       } else if (lookingUp && lookingDown) {
         this.minOffset = 0;
         this.maxOffset = 0;
       }
     } else {
-      this.minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
-      this.maxOffset = this.totalRange.eY - halfHeight - scrollerHeightTop;
+      this.minOffset = minOffset;
+      this.maxOffset = maxOffset;
     }
 
     // if (this.autoChartTranslating) {
