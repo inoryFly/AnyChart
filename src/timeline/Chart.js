@@ -949,8 +949,18 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
     // var halfHeight = this.dataBounds.height / 2;
     var halfHeight = this.dataBounds.height / 2;
     if (this.totalRange.sY >= -halfHeight && this.totalRange.eY <= halfHeight) {
-      this.minOffset = 0;
-      this.maxOffset = 0;
+      var lookingUp = intersectingBounds.momentUp.length + intersectingBounds.rangeUp.length;
+      var lookingDown = intersectingBounds.momentDown.length + intersectingBounds.rangeDown.length;
+      if (lookingUp && !lookingDown) {
+        this.minOffset = halfHeight;
+        this.maxOffset = halfHeight;
+      } else if (!lookingUp && lookingDown) {
+        this.minOffset = -halfHeight;
+        this.maxOffset = -halfHeight;
+      } else if (lookingUp && lookingDown) {
+        this.minOffset = 0;
+        this.maxOffset = 0;
+      }
     } else {
       this.minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
       this.maxOffset = this.totalRange.eY - halfHeight;
