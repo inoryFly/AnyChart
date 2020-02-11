@@ -1901,6 +1901,25 @@ anychart.timelineModule.Chart.prototype.serializeSeries = function(json) {
 };
 
 
+/**
+ * Force update scale range to the current visible range.
+ * @return {anychart.timelineModule.Chart}
+ */
+anychart.timelineModule.Chart.prototype.forceScaleUpdate = function() {
+  var scale = this.scale();
+  var scaleVisibleRange = scale.getRange();
+  var horizontalTranslateRatio = this.horizontalTranslate / this.dataBounds.width;
+  var horizontalTranslateDate = scale.inverseTransform(horizontalTranslateRatio);
+  var visibleRange = {
+    'min': horizontalTranslateDate,
+    'max': horizontalTranslateDate + (scaleVisibleRange['max'] - scaleVisibleRange['min'])
+  };
+
+  scale.setRange(visibleRange['min'], visibleRange['max']);
+  return this;
+};
+
+
 //endregion
 //region -- Disposing.
 /**
@@ -1955,6 +1974,8 @@ anychart.timelineModule.Chart.prototype.disposeInternal = function() {
   proto['rangeMarker'] = proto.rangeMarker;
   proto['todayMarker'] = proto.todayMarker;
   proto['scroller'] = proto.scroller;
+
+  proto['forceScaleUpdate'] = proto.forceScaleUpdate;
 })();
 //exports
 
