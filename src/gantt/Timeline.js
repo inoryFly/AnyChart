@@ -351,7 +351,7 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    * Currently used low ticks count.
    * Used to correctly draw calendar intervals that
    * depend on current low ticks count.
-   * Wprks with this.currentLowerTicksUnit_.
+   * Works with this.currentLowerTicksUnit_.
    *
    * @type {number}
    * @private
@@ -2008,7 +2008,7 @@ anychart.ganttModule.TimeLine.prototype.getWorkingPath_ = function() {
     this.workingPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
     this.workingPath_.zIndex(0);
     anychart.utils.nameElement(this.workingPath_, 'working-path');
-    this.workingPath_.stroke('none').fill('pink 0.5');
+    this.workingPath_.stroke('none').fill(this.getOption('workingFill'));
   }
   return this.workingPath_;
 };
@@ -2024,7 +2024,7 @@ anychart.ganttModule.TimeLine.prototype.getNotWorkingPath_ = function() {
     this.notWorkingPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
     this.notWorkingPath_.zIndex(1);
     anychart.utils.nameElement(this.notWorkingPath_, 'not-working-path');
-    this.notWorkingPath_.stroke('none').fill('lightblue 0.5');
+    this.notWorkingPath_.stroke('none').fill(this.getOption('notWorkingFill'));
   }
   return this.notWorkingPath_;
 };
@@ -2040,7 +2040,7 @@ anychart.ganttModule.TimeLine.prototype.getHolidaysPath_ = function() {
     this.holidaysPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
     this.holidaysPath_.zIndex(2);
     anychart.utils.nameElement(this.holidaysPath_, 'holidays-path');
-    this.holidaysPath_.stroke('none').fill('lightgreen 0.5');
+    this.holidaysPath_.stroke('none').fill(this.getOption('holidaysFill'));
   }
   return this.holidaysPath_;
 };

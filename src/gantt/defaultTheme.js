@@ -154,6 +154,9 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
     'rowOddFill': 'none',
     'rowEvenFill': 'none',
     'rowFill': 'none',
+    'workingFill': 'none',
+    'notWorkingFill': 'none',
+    'holidaysFill': '#cecece 0.5',
 
     'zIndex': 5,
     'headerHeight': 70,
