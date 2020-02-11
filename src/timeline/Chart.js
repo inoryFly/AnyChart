@@ -1906,17 +1906,26 @@ anychart.timelineModule.Chart.prototype.serializeSeries = function(json) {
  * @return {anychart.timelineModule.Chart}
  */
 anychart.timelineModule.Chart.prototype.forceScaleUpdate = function() {
+  var visibleRange = this.getVisibleRange();
+  this.scale().setRange(visibleRange['min'], visibleRange['max']);
+  return this;
+};
+
+
+/**
+ * Returns visible scale range taking horizontal translate into account.
+ * @return {{min: number, max: number}}
+ */
+anychart.timelineModule.Chart.prototype.getVisibleRange = function() {
   var scale = this.scale();
   var scaleVisibleRange = scale.getRange();
   var horizontalTranslateRatio = this.horizontalTranslate / this.dataBounds.width;
   var horizontalTranslateDate = scale.inverseTransform(horizontalTranslateRatio);
-  var visibleRange = {
+
+  return {
     'min': horizontalTranslateDate,
     'max': horizontalTranslateDate + (scaleVisibleRange['max'] - scaleVisibleRange['min'])
   };
-
-  scale.setRange(visibleRange['min'], visibleRange['max']);
-  return this;
 };
 
 
