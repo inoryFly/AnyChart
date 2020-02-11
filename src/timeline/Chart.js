@@ -1985,6 +1985,7 @@ anychart.timelineModule.Chart.prototype.disposeInternal = function() {
   proto['scroller'] = proto.scroller;
 
   proto['forceScaleUpdate'] = proto.forceScaleUpdate;
+  proto['getVisibleRange'] = proto.getVisibleRange;
 })();
 //exports
 
