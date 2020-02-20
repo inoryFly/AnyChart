@@ -228,6 +228,7 @@ goog.addDependency('../../../../src/gantt/Timeline.js', ['anychart.ganttModule.T
 goog.addDependency('../../../../src/gantt/axisMarkers/Line.js', ['anychart.ganttModule.axisMarkers.Line'], ['acgraph', 'anychart.color', 'anychart.core.axisMarkers.PathBase', 'anychart.core.reporting', 'anychart.enums'], {});
 goog.addDependency('../../../../src/gantt/axisMarkers/Range.js', ['anychart.ganttModule.axisMarkers.Range'], ['acgraph', 'anychart.color', 'anychart.core.axisMarkers.PathBase', 'anychart.core.reporting', 'anychart.enums'], {});
 goog.addDependency('../../../../src/gantt/axisMarkers/Text.js', ['anychart.ganttModule.axisMarkers.Text'], ['anychart.core.axisMarkers.TextBase', 'anychart.core.reporting', 'anychart.enums'], {});
+goog.addDependency('../../../../src/gantt/calendar/Calendar.js', ['anychart.ganttModule.calendar.Calendar'], ['anychart.core.Base'], {});
 goog.addDependency('../../../../src/gantt/defaultTheme.js', ['anychart.ganttModule.defaultTheme'], ['anychart.utils'], {});
 goog.addDependency('../../../../src/gantt/draggers/BarDragger.js', ['anychart.ganttModule.draggers.BarDragger'], ['goog.fx.Dragger'], {});
 goog.addDependency('../../../../src/gantt/draggers/BaselineProgressDragger.js', ['anychart.ganttModule.draggers.BaselineProgressDragger'], ['anychart.ganttModule.draggers.ProgressDragger'], {});
