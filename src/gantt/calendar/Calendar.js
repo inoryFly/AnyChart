@@ -12,6 +12,7 @@ goog.require('goog.date.UtcDateTime');
 goog.require('goog.object');
 
 
+
 //endregion
 //region -- Constructor.
 /**
@@ -128,6 +129,7 @@ anychart.ganttModule.calendar.Calendar.Holiday;
  */
 anychart.ganttModule.calendar.Calendar.HolidaysData;
 
+
 /**
  * @typedef {{
  *  isWeekend: boolean,
@@ -167,6 +169,7 @@ anychart.ganttModule.calendar.Calendar.prototype.dropHolidaysData_ = function() 
   this.dropCache_();
 };
 
+
 /**
  * Turns weekend range like [3, 6] to exact weekends like [3, 4, 5, 6].
  *
@@ -204,11 +207,12 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeValidWorkingDay_ = fun
       return {
         'from': from,
         'to': to
-      }
+      };
     }
   }
   return null;
 };
+
 
 /**
  *
@@ -275,6 +279,7 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeWorkingSchedule_ = fun
  *
  * @param {Array.<anychart.ganttModule.calendar.Calendar.Holiday>} holidays - Raw holidays data.
  * @private
+ * @return {?Array.<anychart.ganttModule.calendar.Calendar.Holiday>} - Normalized holidays.
  */
 anychart.ganttModule.calendar.Calendar.prototype.normalizeHolidays_ = function(holidays) {
   if (goog.typeOf(holidays) === 'array') {
@@ -388,6 +393,7 @@ anychart.ganttModule.calendar.Calendar.prototype.holidays = function(opt_value) 
   return this.holidays_;
 };
 
+
 /**
  *
  * @param {number} start - Day start UTC-timestamp.
@@ -413,6 +419,7 @@ anychart.ganttModule.calendar.Calendar.prototype.getDailyInfo_ = function(start,
 
 
 };
+
 
 /**
  * Returns intervals of working days between two passed dates.
