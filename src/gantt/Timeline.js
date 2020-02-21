@@ -5523,7 +5523,8 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.TIMELINE_CALENDAR)) {
-    this.drawCalendar_();
+    console.log('Calendar will be drawn here');
+    // this.drawCalendar_();
     this.markConsistent(anychart.ConsistencyState.TIMELINE_CALENDAR);
   }
 };

@@ -4,7 +4,7 @@ goog.provide('anychart.scales.GanttDateTime');
 goog.require('anychart.core.Base');
 goog.require('anychart.enums');
 goog.require('anychart.format');
-goog.require('anychart.resourceModule.Calendar');
+goog.require('anychart.ganttModule.Calendar');
 
 goog.require('goog.array');
 goog.require('goog.date.Interval');
@@ -179,7 +179,7 @@ anychart.scales.GanttDateTime = function() {
   /**
    * Calendar.
    *
-   * @type {anychart.resourceModule.Calendar}
+   * @type {anychart.ganttModule.Calendar}
    * @private
    */
   this.calendar_ = null;
@@ -996,8 +996,8 @@ anychart.scales.GanttDateTime.prototype.maxTicksCount = function(opt_value) {
 /**
  * Getter/setter for the scale calendar.
  *
- * @param {anychart.resourceModule.Calendar=} opt_value -
- * @return {anychart.resourceModule.Calendar|anychart.scales.GanttDateTime}
+ * @param {anychart.ganttModule.Calendar=} opt_value -
+ * @return {anychart.ganttModule.Calendar|anychart.scales.GanttDateTime}
  */
 anychart.scales.GanttDateTime.prototype.calendar = function(opt_value) {
   if (goog.isDef(opt_value)) {
@@ -1012,7 +1012,7 @@ anychart.scales.GanttDateTime.prototype.calendar = function(opt_value) {
     return this;
   }
   if (!this.calendar_) {
-    this.calendar_ = new anychart.resourceModule.Calendar();
+    this.calendar_ = new anychart.ganttModule.Calendar();
     this.calendar_.listenSignals(this.handleCalendarSignal_, this);
   }
   return this.calendar_;
@@ -1237,9 +1237,11 @@ anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
  */
 anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function(opt_unit, opt_count) {
   if (this.calendar_) {
-    this.calculate();
-    var r = this.getRange();
-    return this.calendar_.getWorkingSchedule(r['min'], r['max'], opt_unit, opt_count);
+    // this.calculate();
+    // var r = this.getRange();
+    // return this.calendar_.getWorkingSchedule(r['min'], r['max'], opt_unit, opt_count);
+    debugger;
+    return [];
   }
   return [];
 };

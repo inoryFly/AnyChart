@@ -1,4 +1,4 @@
-goog.provide('anychart.ganttModule.calendar.Calendar');
+goog.provide('anychart.ganttModule.Calendar');
 
 
 //region -- Requirements.
@@ -19,13 +19,13 @@ goog.require('goog.object');
  * @constructor
  * @extends {anychart.core.Base}
  */
-anychart.ganttModule.calendar.Calendar = function() {
+anychart.ganttModule.Calendar = function() {
   anychart.resourceModule.Calendar.base(this, 'constructor');
 
   /**
    * Internal normalized representation of working schedule.
    *
-   * @type {?Array.<?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>}
+   * @type {?Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>}
    * @private
    */
   this.schedule_ = null;
@@ -33,7 +33,7 @@ anychart.ganttModule.calendar.Calendar = function() {
   /**
    * Internal normalized representation of holidays.
    *
-   * @type {?Array.<anychart.ganttModule.calendar.Calendar.Holiday>}
+   * @type {?Array.<anychart.ganttModule.Calendar.Holiday>}
    * @private
    */
   this.holidays_ = null;
@@ -42,7 +42,7 @@ anychart.ganttModule.calendar.Calendar = function() {
    * Internal processed holidays data.
    * Used for quick calculations of working schedule.
    *
-   * @type {anychart.ganttModule.calendar.Calendar.HolidaysData}
+   * @type {anychart.ganttModule.Calendar.HolidaysData}
    * @private
    */
   this.holidaysData_ = {
@@ -81,12 +81,12 @@ anychart.ganttModule.calendar.Calendar = function() {
   /**
    * Daily info cache.
    *
-   * @type {Object.<anychart.ganttModule.calendar.Calendar.DailyScheduleData>}
+   * @type {Object.<anychart.ganttModule.Calendar.DailyScheduleData>}
    * @private
    */
   this.dailyCache_ = {};
 };
-goog.inherits(anychart.ganttModule.calendar.Calendar, anychart.core.Base);
+goog.inherits(anychart.ganttModule.Calendar, anychart.core.Base);
 
 
 //endregion
@@ -96,7 +96,7 @@ goog.inherits(anychart.ganttModule.calendar.Calendar, anychart.core.Base);
  *
  * @type {number}
  */
-anychart.ganttModule.calendar.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.NEEDS_REAPPLICATION;
+anychart.ganttModule.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.NEEDS_REAPPLICATION;
 
 
 //endregion
@@ -107,7 +107,7 @@ anychart.ganttModule.calendar.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Si
  *  to: number|undefined
  * }}
  */
-anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule;
+anychart.ganttModule.Calendar.DailyWorkingSchedule;
 
 /**
  * @typedef {{
@@ -117,7 +117,7 @@ anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule;
  *  label: string|undefined
  * }}
  */
-anychart.ganttModule.calendar.Calendar.Holiday;
+anychart.ganttModule.Calendar.Holiday;
 
 
 /**
@@ -126,19 +126,19 @@ anychart.ganttModule.calendar.Calendar.Holiday;
  *  custom: Object
  * }}
  */
-anychart.ganttModule.calendar.Calendar.HolidaysData;
+anychart.ganttModule.Calendar.HolidaysData;
 
 /**
  * @typedef {{
  *  isWeekend: boolean,
  *  isHoliday: boolean,
- *  workingIntervals: Array.<anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>,
- *  notWorkingIntervals: Array.<anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>,
+ *  workingIntervals: Array.<anychart.ganttModule.Calendar.DailyWorkingSchedule>,
+ *  notWorkingIntervals: Array.<anychart.ganttModule.Calendar.DailyWorkingSchedule>,
  *  start: number,
  *  end: number
  * }}
  */
-anychart.ganttModule.calendar.Calendar.DailyScheduleData;
+anychart.ganttModule.Calendar.DailyScheduleData;
 
 
 //endregion
@@ -148,7 +148,7 @@ anychart.ganttModule.calendar.Calendar.DailyScheduleData;
  *
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.dropCache_ = function() {
+anychart.ganttModule.Calendar.prototype.dropCache_ = function() {
   this.cache_ = {};
 };
 
@@ -159,7 +159,7 @@ anychart.ganttModule.calendar.Calendar.prototype.dropCache_ = function() {
  *
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.dropHolidaysData_ = function() {
+anychart.ganttModule.Calendar.prototype.dropHolidaysData_ = function() {
   this.holidaysData_ = {
     yearly: {},
     custom: {}
@@ -174,7 +174,7 @@ anychart.ganttModule.calendar.Calendar.prototype.dropHolidaysData_ = function() 
  * @return {Array.<number>} - Exact weekends.
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.turnWeekendRangeToExactDays_ = function(range) {
+anychart.ganttModule.Calendar.prototype.turnWeekendRangeToExactDays_ = function(range) {
   var weekendStart = range[0];
   var weekendEnd = range[1];
   var rv = [];
@@ -189,11 +189,11 @@ anychart.ganttModule.calendar.Calendar.prototype.turnWeekendRangeToExactDays_ = 
 
 /**
  *
- * @param {anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule} val - Day to check.
+ * @param {anychart.ganttModule.Calendar.DailyWorkingSchedule} val - Day to check.
  * @private
- * @return {?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule}
+ * @return {?anychart.ganttModule.Calendar.DailyWorkingSchedule}
  */
-anychart.ganttModule.calendar.Calendar.prototype.normalizeValidWorkingDay_ = function(val) {
+anychart.ganttModule.Calendar.prototype.normalizeValidWorkingDay_ = function(val) {
   if (goog.typeOf(val) === 'object' && ('from' in val) && ('to' in val)) {
     var from = +val['from'];
     var to = +val['to'];
@@ -212,12 +212,12 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeValidWorkingDay_ = fun
 
 /**
  *
- * @param {anychart.ganttModule.calendar.Calendar.Holiday} holiday - Single holiday config object.
- * @return {?anychart.ganttModule.calendar.Calendar.Holiday} - Normalized holiday object.
+ * @param {anychart.ganttModule.Calendar.Holiday} holiday - Single holiday config object.
+ * @return {?anychart.ganttModule.Calendar.Holiday} - Normalized holiday object.
  *  Returns null if here are some unacceptable values.
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.normalizeSingleHoliday_ = function(holiday) {
+anychart.ganttModule.Calendar.prototype.normalizeSingleHoliday_ = function(holiday) {
   if (goog.typeOf(holiday) === 'object' && ('day' in holiday) && ('month' in holiday)) {
     var day = +holiday['day'];
     var month = +holiday['month'];
@@ -250,13 +250,13 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeSingleHoliday_ = funct
 /**
  * TODO (A.Kudryavtsev): JSDoc.
  *
- * @param {Array.<?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>} schedule - Working
+ * @param {Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>} schedule - Working
  *  schedule to be normalized.
- * @return {?Array.<?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>} - Normalized
+ * @return {?Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>} - Normalized
  *  schedule or null for miss-configuration case.
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.normalizeWorkingSchedule_ = function(schedule) {
+anychart.ganttModule.Calendar.prototype.normalizeWorkingSchedule_ = function(schedule) {
   if (goog.typeOf(schedule) === 'array') {
     var rv = [];
     for (var i = 0; i < 7; i++) { // Iterating 0..6 days of week for utc-day, 0 is Sunday, 6 is Saturday.
@@ -273,10 +273,10 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeWorkingSchedule_ = fun
 /**
  * Normalizes holidays values.
  *
- * @param {Array.<anychart.ganttModule.calendar.Calendar.Holiday>} holidays - Raw holidays data.
+ * @param {Array.<anychart.ganttModule.Calendar.Holiday>} holidays - Raw holidays data.
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.normalizeHolidays_ = function(holidays) {
+anychart.ganttModule.Calendar.prototype.normalizeHolidays_ = function(holidays) {
   if (goog.typeOf(holidays) === 'array') {
     var rv = [];
     for (var i = 0; i < holidays.length; i++) {
@@ -298,7 +298,7 @@ anychart.ganttModule.calendar.Calendar.prototype.normalizeHolidays_ = function(h
  *
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.defineWeekendRange_ = function() {
+anychart.ganttModule.Calendar.prototype.defineWeekendRange_ = function() {
   if (this.schedule_) {
     for (var i = 0; i < this.schedule_.length; i++) {
       var day = this.schedule_[i];
@@ -330,7 +330,7 @@ anychart.ganttModule.calendar.Calendar.prototype.defineWeekendRange_ = function(
  *
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.buildHolidaysData_ = function() {
+anychart.ganttModule.Calendar.prototype.buildHolidaysData_ = function() {
   if (this.holidays_) {
     for (var i = 0; i < this.holidays_.length; i++) {
       var holiday = this.holidays_[i];
@@ -356,10 +356,10 @@ anychart.ganttModule.calendar.Calendar.prototype.buildHolidaysData_ = function()
 /**
  * TODO (A.Kudryavtsev): JSDoc.
  *
- * @param {Array.<?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>=} opt_value - User defined working schedule.
- * @return {?Array.<?anychart.ganttModule.calendar.Calendar.DailyWorkingSchedule>|anychart.ganttModule.calendar.Calendar}
+ * @param {Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>=} opt_value - User defined working schedule.
+ * @return {?Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>|anychart.ganttModule.Calendar}
  */
-anychart.ganttModule.calendar.Calendar.prototype.schedule = function(opt_value) {
+anychart.ganttModule.Calendar.prototype.schedule = function(opt_value) {
   if (goog.isDef(opt_value)) {
     this.schedule_ = this.normalizeWorkingSchedule_(opt_value);
     this.dropCache_();
@@ -374,10 +374,10 @@ anychart.ganttModule.calendar.Calendar.prototype.schedule = function(opt_value) 
 /**
  * TODO (A.Kudryavtsev): JSDoc.
  *
- * @param {Array.<anychart.ganttModule.calendar.Calendar.Holiday>=} opt_value - User defined holidays.
- * @return {?Array.<anychart.ganttModule.calendar.Calendar.Holiday>|anychart.ganttModule.calendar.Calendar}
+ * @param {Array.<anychart.ganttModule.Calendar.Holiday>=} opt_value - User defined holidays.
+ * @return {?Array.<anychart.ganttModule.Calendar.Holiday>|anychart.ganttModule.Calendar}
  */
-anychart.ganttModule.calendar.Calendar.prototype.holidays = function(opt_value) {
+anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
   if (goog.isDef(opt_value)) {
     this.holidays_ = this.normalizeHolidays_(opt_value);
     this.dropHolidaysData_();
@@ -392,10 +392,10 @@ anychart.ganttModule.calendar.Calendar.prototype.holidays = function(opt_value) 
  *
  * @param {number} start - Day start UTC-timestamp.
  * @param {number} end - Day end UTC-timestamp.
- * @return {anychart.ganttModule.calendar.Calendar.DailyScheduleData} - Daily full info.
+ * @return {anychart.ganttModule.Calendar.DailyScheduleData} - Daily full info.
  * @private
  */
-anychart.ganttModule.calendar.Calendar.prototype.getDailyInfo_ = function(start, end) {
+anychart.ganttModule.Calendar.prototype.getDailyInfo_ = function(start, end) {
   var d = new Date(start);
 
   var year = d.getUTCFullYear();
@@ -406,10 +406,13 @@ anychart.ganttModule.calendar.Calendar.prototype.getDailyInfo_ = function(start,
   var dateUTC = new goog.date.UtcDateTime(year, month, date);
 
   // checking cache
-  var cacheKey = goog.date.Date.prototype.toUTCIsoString.call(dateUTC);
+  var cacheKey = year + '-' + month + '-' + date;
+  // var cacheKey = goog.date.Date.prototype.toUTCIsoString.call(dateUTC);
   var res = this.cache_[cacheKey];
   if (goog.isDef(res))
     return res;
+
+  res = {};
 
 
 };
@@ -421,10 +424,10 @@ anychart.ganttModule.calendar.Calendar.prototype.getDailyInfo_ = function(start,
  *  UTC-timestamp is preferred to avoid timezone shift.
  * @param {number|Date} endDate - End date for getting schedule info.
  *  UTC-timestamp is preferred to avoid timezone shift as well.
- * @return {Array.<anychart.ganttModule.calendar.Calendar.DailyScheduleData>}
+ * @return {Array.<anychart.ganttModule.Calendar.DailyScheduleData>}
  *
  */
-anychart.ganttModule.calendar.Calendar.prototype.getWorkingSchedule = function(startDate, endDate) {
+anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate, endDate) {
   var start = anychart.utils.normalizeTimestamp(startDate);
   var end = anychart.utils.normalizeTimestamp(endDate);
   var rv = [];
