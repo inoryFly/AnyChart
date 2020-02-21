@@ -5278,36 +5278,61 @@ anychart.ganttModule.TimeLine.prototype.drawHoliday_ = function(start, end) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
-  if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) { // Calendar might not had been initialized.
-    /**
-     * Current working schedule for visible range.
-     *
-     * @type {Array.<anychart.resourceModule.Calendar.ScheduleItem>}
-     */
-    var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
-    console.log(workingSchedule);
+  if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) {
     this.clearCalendar_();
 
-    for (var i = 0; i < workingSchedule.length; i++) {
-      var singleWorkingScheduleItemInfo = /** @type {anychart.resourceModule.Calendar.ScheduleItem} */ (workingSchedule[i]);
+    var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
+    // console.log(workingSchedule);
 
+    for (var i = 0; i < workingSchedule.length; i++) {
+      var singleWorkingScheduleItemInfo = workingSchedule[i];
       var start = singleWorkingScheduleItemInfo.start;
       var end = singleWorkingScheduleItemInfo.end;
+      var isHoliday = singleWorkingScheduleItemInfo.isHoliday;
+      var isWeekend = singleWorkingScheduleItemInfo.isWeekend;
 
-      var workingTime = singleWorkingScheduleItemInfo.workingTime;
-      if (workingTime.length) {
-        /*
-          Here we suppose that selected period contains workings time, it's not a holiday.
-         */
-        this.drawWorkingTime_(start, end, workingTime);
-      } else {
-        /*
-          Suppose that if selected period contains no working time - it's a holiday.
-         */
+      if (isHoliday) {
         this.drawHoliday_(start, end);
+      } else if (isWeekend) {
+        this.drawCalendarRange_(this.getNotWorkingPath_(), start, end);
       }
+      // console.log(isHoliday, isWeekend);
+      // console.log(new Date(start));
+      // console.log(new Date(end));
+      // console.log('----');
     }
   }
+
+  // if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) { // Calendar might not had been initialized.
+  //   /**
+  //    * Current working schedule for visible range.
+  //    *
+  //    * @type {Array.<anychart.resourceModule.Calendar.ScheduleItem>}
+  //    */
+  //   var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
+  //   console.log(workingSchedule);
+  //   this.clearCalendar_();
+  //
+  //   for (var i = 0; i < workingSchedule.length; i++) {
+  //     var singleWorkingScheduleItemInfo = /** @type {anychart.resourceModule.Calendar.ScheduleItem} */ (workingSchedule[i]);
+  //
+  //     var start = singleWorkingScheduleItemInfo.start;
+  //     var end = singleWorkingScheduleItemInfo.end;
+  //
+  //     var workingTime = singleWorkingScheduleItemInfo.workingTime;
+  //     if (workingTime.length) {
+  //       /*
+  //         Here we suppose that selected period contains workings time, it's not a holiday.
+  //        */
+  //       this.drawWorkingTime_(start, end, workingTime);
+  //     } else {
+  //       /*
+  //         Suppose that if selected period contains no working time - it's a holiday.
+  //        */
+  //       this.drawHoliday_(start, end);
+  //     }
+  //   }
+  // }
 };
 
 
@@ -5523,8 +5548,7 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
   }
 
   if (this.hasInvalidationState(anychart.ConsistencyState.TIMELINE_CALENDAR)) {
-    console.log('Calendar will be drawn here');
-    // this.drawCalendar_();
+    this.drawCalendar_();
     this.markConsistent(anychart.ConsistencyState.TIMELINE_CALENDAR);
   }
 };

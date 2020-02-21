@@ -21,7 +21,7 @@ goog.require('goog.object');
  * @extends {anychart.core.Base}
  */
 anychart.ganttModule.Calendar = function() {
-  anychart.resourceModule.Calendar.base(this, 'constructor');
+  anychart.ganttModule.Calendar.base(this, 'constructor');
 
   /**
    * Internal normalized representation of working schedule.
@@ -110,6 +110,7 @@ anychart.ganttModule.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.NEED
  */
 anychart.ganttModule.Calendar.DailyWorkingSchedule;
 
+
 /**
  * @typedef {{
  *  day: number,
@@ -141,6 +142,25 @@ anychart.ganttModule.Calendar.HolidaysData;
  * }}
  */
 anychart.ganttModule.Calendar.DailyScheduleData;
+
+
+//endregion
+//region -- Constants.
+/**
+ * Single day interval.
+ *
+ * @const
+ * @type {goog.date.Interval}
+ */
+anychart.ganttModule.Calendar.DAY_INTERVAL = new goog.date.Interval(0, 0, 1);
+
+/**
+ * Single hour interval.
+ *
+ * @const
+ * @type {goog.date.Interval}
+ */
+anychart.ganttModule.Calendar.HOUR_INTERVAL = new goog.date.Interval(0, 0, 0, 1);
 
 
 //endregion
@@ -228,10 +248,10 @@ anychart.ganttModule.Calendar.prototype.normalizeSingleHoliday_ = function(holid
 
     if (!isNaN(day) && (month >= 0 && month < 12)) { // Month comparison also considers NaNs.
       // TODO (A.Kudryavtsev): Should we round these values?
-      var rv = {
+      var rv = /** @type {anychart.ganttModule.Calendar.Holiday} */ ({
         'day': day,
         'month': month
-      };
+      });
 
       if ('year' in holiday) {
         var year = +holiday['year'];
@@ -304,6 +324,7 @@ anychart.ganttModule.Calendar.prototype.normalizeHolidays_ = function(holidays) 
  * @private
  */
 anychart.ganttModule.Calendar.prototype.defineWeekendRange_ = function() {
+  this.actualWeekends_.length = 0;
   if (this.schedule_) {
     for (var i = 0; i < this.schedule_.length; i++) {
       var day = this.schedule_[i];
@@ -393,10 +414,61 @@ anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
   return this.holidays_;
 };
 
+/**
+ * Fills passed working and not working data arrays with working and not working data.
+ * TODO (A.Kudryavtsev): Yes, I know here are too many parameters. But it's already calculated, no need to recalculate it.
+ *
+ * @param {anychart.ganttModule.Calendar.DailyScheduleData} data - Single schedule data item to fill
+ *  workingIntervals and notWorkingIntervals.
+ * @param {number} year - Year.
+ * @param {number} month - UTC month (0 is Jan, 11 is Dec).
+ * @param {number} date - Date.
+ * @param {number} dayOfWeek - UTC day of week, 0 is Sunday, 6 is Saturday.
+ * @private
+ */
+anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, year, month, date, dayOfWeek) {
+  /*
+    TODO (A.Kudryavtsev): Explain and refactor!!!
+   */
+  var dateUTC = new goog.date.UtcDateTime(year, month, date);
+  var daySchedule = this.schedule_[dayOfWeek];
+  if (daySchedule) { // By idea, if must be always defined, but who knows...
+    var fromHour = daySchedule['from'];
+    var toHour = daySchedule['to'];
+
+    var start = dateUTC.getTime();
+    var interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(fromHour);
+    dateUTC.add(interval);
+    var end = dateUTC.getTime();
+    data['notWorkingIntervals'].push({
+      'from': start,
+      'to': end - 1
+    });
+
+    start = end;
+    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(toHour - fromHour);
+    dateUTC.add(interval);
+    end = dateUTC.getTime();
+    data['workingIntervals'].push({
+      'from': start,
+      'to': end - 1
+    });
+
+    start = end;
+    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(23 - toHour);
+    dateUTC.add(interval);
+    end = dateUTC.getTime();
+    data['notWorkingIntervals'].push({
+      'from': start,
+      'to': end - 1
+    });
+  }
+};
+
 
 /**
  *
- * @param {number} start - Day start UTC-timestamp.
+ * @param {number} start - Day start UTC-timestamp. Must come here as 00:00 hours.
  * @param {number} end - Day end UTC-timestamp.
  * @return {anychart.ganttModule.Calendar.DailyScheduleData} - Daily full info.
  * @private
@@ -409,18 +481,35 @@ anychart.ganttModule.Calendar.prototype.getDailyInfo_ = function(start, end) {
   var date = d.getUTCDate();
   var weekDay = d.getUTCDay();
 
-  var dateUTC = new goog.date.UtcDateTime(year, month, date);
-
-  // checking cache
   var cacheKey = year + '-' + month + '-' + date;
-  // var cacheKey = goog.date.Date.prototype.toUTCIsoString.call(dateUTC);
+  var yearlyKey = month + '-' + date;
   var res = this.cache_[cacheKey];
   if (goog.isDef(res))
     return res;
 
-  res = {};
+  var isHoliday = !!(this.holidaysData_.yearly[yearlyKey] || this.holidaysData_.custom[cacheKey]);
+  var isWeekend = goog.array.contains(this.actualWeekends_, weekDay);
 
+  res = /** @type {anychart.ganttModule.Calendar.DailyScheduleData} */ ({
+    'isHoliday': isHoliday,
+    'isWeekend': isWeekend,
+    'start': start,
+    'end': end,
+    'workingIntervals': [],
+    'notWorkingIntervals': []
+  });
 
+  if (isWeekend) {
+    res['notWorkingIntervals'].push({
+      'from': start,
+      'to': end
+    })
+  } else {
+    this.fillWorkingIntervals_(res, year, month, date, weekDay);
+  }
+
+  this.cache_[cacheKey] = res;
+  return res;
 };
 
 
@@ -444,16 +533,18 @@ anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate,
 
   start = anychart.utils.alignDateLeftByUnit(start, anychart.enums.Interval.DAY, 1, start); //TODO (A.Kudryavtsev): Do we need it?
   var date = new Date(start);
-  var interval = new goog.date.Interval(0, 0, 1);
   var current = new goog.date.UtcDateTime(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
   var dayStartTimestamp = current.getTime();
 
-
   while (dayStartTimestamp < end) {
-    current.add(interval);
+    current.add(anychart.ganttModule.Calendar.DAY_INTERVAL);
     var dayEndTimestamp = current.getTime();
+    var dailyInfo = this.getDailyInfo_(dayStartTimestamp, dayEndTimestamp - 1000); // Minus one second.
+    rv.push(dailyInfo);
+    dayStartTimestamp = dayEndTimestamp;
   }
 
+  return rv;
 };
 
 

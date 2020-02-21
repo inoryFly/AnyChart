@@ -1237,11 +1237,9 @@ anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
  */
 anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function(opt_unit, opt_count) {
   if (this.calendar_) {
-    // this.calculate();
-    // var r = this.getRange();
-    // return this.calendar_.getWorkingSchedule(r['min'], r['max'], opt_unit, opt_count);
-    debugger;
-    return [];
+    this.calculate();
+    var r = this.getRange();
+    return this.calendar_.getWorkingSchedule(r['min'], r['max']);
   }
   return [];
 };
