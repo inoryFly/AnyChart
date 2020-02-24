@@ -340,34 +340,29 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    * Currently used low ticks unit.
    * Used to correctly draw calendar intervals that
    * depend on current low ticks unit.
-   * Works with this.currentLowerTicksCount_.
    *
    * @type {?anychart.enums.Interval}
    * @private
    */
   this.currentLowerTicksUnit_ = null;
 
-  /**
-   * Currently used low ticks count.
-   * Used to correctly draw calendar intervals that
-   * depend on current low ticks count.
-   * Works with this.currentLowerTicksUnit_.
-   *
-   * @type {number}
-   * @private
-   */
-  this.currentLowerTicksCount_ = NaN;
-
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['workingFill', 0, 0, 0, function() {
-      this.getWorkingPath_().fill(this.getOption('workingFill'));
+      var fill = /** @type {acgraph.vector.Fill} */ (this.getOption('workingFill'));
+      this.getWorkingPath_().fill(fill);
     }],
     ['notWorkingFill', 0, 0, 0, function() {
-      this.getNotWorkingPath_().fill(this.getOption('notWorkingFill'));
+      var fill = /** @type {acgraph.vector.Fill} */ (this.getOption('notWorkingFill'));
+      this.getNotWorkingPath_().fill(fill);
     }],
     ['holidaysFill', 0, 0, 0, function() {
-      this.getHolidaysPath_().fill(this.getOption('holidaysFill'));
+      var fill = /** @type {acgraph.vector.Fill} */ (this.getOption('holidaysFill'));
+      this.getHolidaysPath_().fill(fill);
+    }],
+    ['weekendsFill', 0, 0, 0, function() {
+      var fill = /** @type {acgraph.vector.Fill} */ (this.getOption('weekendsFill'));
+      this.getWeekendsPath_().fill(this.getOption('weekendsFill'));
     }]
   ]);
 
@@ -553,6 +548,30 @@ anychart.ganttModule.TimeLine.EDIT_CORNER_HEIGHT = 5;
 anychart.ganttModule.TimeLine.EDIT_CONNECTOR_RADIUS = 5;
 
 
+/**
+ * Intervals weight growth map.
+ *
+ * @type {Object.<anychart.enums.Interval, number>}
+ * @const
+ */
+anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP = (function() {
+  var rv = {};
+  rv[anychart.enums.Interval.MILLISECOND] = 0;
+  rv[anychart.enums.Interval.SECOND] = 1;
+  rv[anychart.enums.Interval.MINUTE] = 2;
+  rv[anychart.enums.Interval.HOUR] = 3;
+  rv[anychart.enums.Interval.DAY] = 4;
+  rv[anychart.enums.Interval.WEEK] = 5;
+  rv[anychart.enums.Interval.THIRD_OF_MONTH] = 6;
+  rv[anychart.enums.Interval.MONTH] = 6;
+  rv[anychart.enums.Interval.QUARTER] = 7;
+  rv[anychart.enums.Interval.SEMESTER] = 8;
+  rv[anychart.enums.Interval.YEAR] = 9;
+
+  return rv;
+})();
+
+
 //endregion
 //region -- Coloring.
 /**
@@ -572,6 +591,9 @@ anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
   ]);
   anychart.core.settings.createDescriptors(map, [
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'holidaysFill', anychart.core.settings.fillNormalizer]
+  ]);
+  anychart.core.settings.createDescriptors(map, [
+    [anychart.enums.PropertyHandlerType.MULTI_ARG, 'weekendsFill', anychart.core.settings.fillNormalizer]
   ]);
   return map;
 })();
@@ -1999,6 +2021,42 @@ anychart.ganttModule.TimeLine.prototype.markers = function(opt_value) {
 //endregion
 //region -- Paths getters.
 /**
+ * Getter for this.holidaysPath_.
+ * @return {acgraph.vector.Path}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.getHolidaysPath_ = function() {
+  if (!this.holidaysPath_) {
+    this.holidaysPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
+    this.holidaysPath_.zIndex(0);
+    anychart.utils.nameElement(this.holidaysPath_, 'holidays-path');
+    this.holidaysPath_
+      .stroke('none')
+      .fill(/** @type {acgraph.vector.Fill} */ (this.getOption('holidaysFill')));
+  }
+  return this.holidaysPath_;
+};
+
+
+/**
+ * Getter for this.weekendsPath_.
+ * @return {acgraph.vector.Path}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.getWeekendsPath_ = function() {
+  if (!this.weekendsPath_) {
+    this.weekendsPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
+    this.weekendsPath_.zIndex(0);
+    anychart.utils.nameElement(this.weekendsPath_, 'weekends-path');
+    this.weekendsPath_
+      .stroke('none')
+      .fill(/** @type {acgraph.vector.Fill} */ (this.getOption('weekendsFill')));
+  }
+  return this.weekendsPath_;
+};
+
+
+/**
  * Getter for this.workingPath_.
  * @return {acgraph.vector.Path}
  * @private
@@ -2006,9 +2064,11 @@ anychart.ganttModule.TimeLine.prototype.markers = function(opt_value) {
 anychart.ganttModule.TimeLine.prototype.getWorkingPath_ = function() {
   if (!this.workingPath_) {
     this.workingPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
-    this.workingPath_.zIndex(0);
+    this.workingPath_.zIndex(1);
     anychart.utils.nameElement(this.workingPath_, 'working-path');
-    this.workingPath_.stroke('none').fill(this.getOption('workingFill'));
+    this.workingPath_
+      .stroke('none')
+      .fill(/** @type {acgraph.vector.Fill} */ (this.getOption('workingFill')));
   }
   return this.workingPath_;
 };
@@ -2024,27 +2084,12 @@ anychart.ganttModule.TimeLine.prototype.getNotWorkingPath_ = function() {
     this.notWorkingPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
     this.notWorkingPath_.zIndex(1);
     anychart.utils.nameElement(this.notWorkingPath_, 'not-working-path');
-    this.notWorkingPath_.stroke('none').fill(this.getOption('notWorkingFill'));
+    this.notWorkingPath_
+      .stroke('none')
+      .fill(/** @type {acgraph.vector.Fill} */ (this.getOption('notWorkingFill')));
   }
   return this.notWorkingPath_;
 };
-
-
-/**
- * Getter for this.holidaysPath_.
- * @return {acgraph.vector.Path}
- * @private
- */
-anychart.ganttModule.TimeLine.prototype.getHolidaysPath_ = function() {
-  if (!this.holidaysPath_) {
-    this.holidaysPath_ = /** @type {acgraph.vector.Path} */ (this.getCalendarLayer().path());
-    this.holidaysPath_.zIndex(2);
-    anychart.utils.nameElement(this.holidaysPath_, 'holidays-path');
-    this.holidaysPath_.stroke('none').fill(this.getOption('holidaysFill'));
-  }
-  return this.holidaysPath_;
-};
-
 
 
 /**
@@ -5190,8 +5235,9 @@ anychart.ganttModule.TimeLine.prototype.applyClip = function(clipRect) {
  */
 anychart.ganttModule.TimeLine.prototype.clearCalendar_ = function() {
   this.getWorkingPath_().clear();
-  this.getHolidaysPath_().clear();
   this.getNotWorkingPath_().clear();
+  this.getHolidaysPath_().clear();
+  this.getWeekendsPath_().clear();
 };
 
 
@@ -5227,33 +5273,24 @@ anychart.ganttModule.TimeLine.prototype.drawCalendarRange_ = function(path, star
  * Draws single working time item.
  * Actually draws working and not working time in single passage.
  *
- * @param {number} start - Start working period timestamp
- *  (@see anychart.ganttModule.TimeLine.prototype.drawCalendar_).
- * @param {number} end - End working period timestamp
- *  (@see anychart.ganttModule.TimeLine.prototype.drawCalendar_).
- * @param {Array.<Array.<number>>} workingTime - Array with arrays of two elements.
- *  First element represents start timestamp of single work in whole interval.
- *  Second one represents end timestamp (@see anychart.ganttModule.TimeLine.prototype.drawCalendar_).
+ * @param {anychart.ganttModule.Calendar.DailyScheduleData} dailySchedule - Single day working schedule.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.drawWorkingTime_ = function(start, end, workingTime) {
-  var notWorkingStart = start;
-  var notWorkingEnd = NaN;
+anychart.ganttModule.TimeLine.prototype.drawWorkingTime_ = function(dailySchedule) {
+  if (this.isIntervalUnitEqualsOrBelow_(anychart.enums.Interval.HOUR)) {
+    var i;
+    var workingIntervals = dailySchedule['workingIntervals'];
+    var notWorkingIntervals = dailySchedule['notWorkingIntervals'];
 
-  for (var i = 0; i < workingTime.length; i++) {
-    var work = workingTime[i];
-
-    var workingStart = work[0];
-    var workingEnd = work[1];
-    notWorkingEnd = workingStart;
-
-    this.drawCalendarRange_(this.getWorkingPath_(), workingStart, workingEnd);
-    this.drawCalendarRange_(this.getNotWorkingPath_(), notWorkingStart, notWorkingEnd);
-
-    notWorkingStart = workingEnd;
+    for (i = 0; i < notWorkingIntervals.length; i++) {
+      var notWorkingInterval = notWorkingIntervals[i];
+      this.drawCalendarRange_(this.getNotWorkingPath_(), notWorkingInterval['from'], notWorkingInterval['to']);
+    }
+    for (i = 0; i < workingIntervals.length; i++) {
+      var workingInterval = workingIntervals[i];
+      this.drawCalendarRange_(this.getWorkingPath_(), workingInterval['from'], workingInterval['to']);
+    }
   }
-
-  this.drawCalendarRange_(this.notWorkingPath_, notWorkingStart, end);
 };
 
 
@@ -5273,16 +5310,50 @@ anychart.ganttModule.TimeLine.prototype.drawHoliday_ = function(start, end) {
 
 
 /**
+ * Defines whether currentLowerTicksUnit_ is below allowedInterval.
+ * For example, DAY is below or equal MONTH, YEAR is not below or equal SEMESTER.
+ *
+ * @param {anychart.enums.Interval} allowedInterval - Interval that currentLowerTicksUnit_ must equal
+ *  or be below.
+ * @return {boolean}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.isIntervalUnitEqualsOrBelow_ = function(allowedInterval) {
+  if (this.currentLowerTicksUnit_) {
+    var currentUnitWeight = anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP[this.currentLowerTicksUnit_];
+    var allowedUnitWeight = anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP[allowedInterval];
+    return allowedUnitWeight >= currentUnitWeight;
+  }
+  return false;
+};
+
+
+/**
+ * Defines whether the calendar values must be drawn.
+ *
+ * Basically, as it was decided in DVF-4370, holidays and weekends
+ * must be drawn for anychart.enums.Interval.DAY and below,
+ * working/not working hours must be drawn for anychart.enums.Interval.HOUR
+ * and below.
+ *
+ * @return {boolean}
+ * @private
+ */
+anychart.ganttModule.TimeLine.prototype.isCalendarMustBeDrawn_ = function() {
+  return this.scale_.hasCalendar() && this.isIntervalUnitEqualsOrBelow_(anychart.enums.Interval.DAY);
+};
+
+
+/**
  * Draws current working, not working and holidays periods depending on availabilities settings.
  *
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
-  if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) {
-    this.clearCalendar_();
+  this.clearCalendar_();
 
-    var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
-    // console.log(workingSchedule);
+  if (this.isCalendarMustBeDrawn_()) {
+    var workingSchedule = this.scale_.getWorkingSchedule();
 
     for (var i = 0; i < workingSchedule.length; i++) {
       var singleWorkingScheduleItemInfo = workingSchedule[i];
@@ -5292,47 +5363,18 @@ anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
       var isWeekend = singleWorkingScheduleItemInfo.isWeekend;
 
       if (isHoliday) {
-        this.drawHoliday_(start, end);
+        if (this.currentLowerTicksUnit_ === anychart.enums.Interval.DAY) {
+          this.drawCalendarRange_(this.getHolidaysPath_(), start, end);
+        } else {
+          this.drawWorkingTime_(singleWorkingScheduleItemInfo);
+        }
       } else if (isWeekend) {
-        this.drawCalendarRange_(this.getNotWorkingPath_(), start, end);
+        this.drawCalendarRange_(this.getWeekendsPath_(), start, end);
+      } else {
+        this.drawWorkingTime_(singleWorkingScheduleItemInfo);
       }
-      // console.log(isHoliday, isWeekend);
-      // console.log(new Date(start));
-      // console.log(new Date(end));
-      // console.log('----');
     }
   }
-
-  // if (this.scale_.hasCalendar() && this.currentLowerTicksUnit_) { // Calendar might not had been initialized.
-  //   /**
-  //    * Current working schedule for visible range.
-  //    *
-  //    * @type {Array.<anychart.resourceModule.Calendar.ScheduleItem>}
-  //    */
-  //   var workingSchedule = this.scale_.getWorkingSchedule(this.currentLowerTicksUnit_);
-  //   console.log(workingSchedule);
-  //   this.clearCalendar_();
-  //
-  //   for (var i = 0; i < workingSchedule.length; i++) {
-  //     var singleWorkingScheduleItemInfo = /** @type {anychart.resourceModule.Calendar.ScheduleItem} */ (workingSchedule[i]);
-  //
-  //     var start = singleWorkingScheduleItemInfo.start;
-  //     var end = singleWorkingScheduleItemInfo.end;
-  //
-  //     var workingTime = singleWorkingScheduleItemInfo.workingTime;
-  //     if (workingTime.length) {
-  //       /*
-  //         Here we suppose that selected period contains workings time, it's not a holiday.
-  //        */
-  //       this.drawWorkingTime_(start, end, workingTime);
-  //     } else {
-  //       /*
-  //         Suppose that if selected period contains no working time - it's a holiday.
-  //        */
-  //       this.drawHoliday_(start, end);
-  //     }
-  //   }
-  // }
 };
 
 
@@ -5511,7 +5553,6 @@ anychart.ganttModule.TimeLine.prototype.specialInvalidated = function() {
       if (header.level(i).enabled()) {
         var levelData = levelsData[i];
         this.currentLowerTicksUnit_ = levelData['unit'];
-        this.currentLowerTicksCount_ = levelData['count'];
         ticks = this.scale_.getTicks(NaN, NaN, levelData['unit'], levelData['count']);
         break;
       }

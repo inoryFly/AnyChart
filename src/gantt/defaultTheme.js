@@ -154,9 +154,11 @@ goog.mixin(goog.global['anychart']['themes']['defaultTheme'], {
     'rowOddFill': 'none',
     'rowEvenFill': 'none',
     'rowFill': 'none',
-    'workingFill': 'pink 0.5',
-    'notWorkingFill': 'lightgreen 0.5',
+
+    'workingFill': 'lightblue 0.5',
+    'notWorkingFill': 'lightyellow 0.5',
     'holidaysFill': '#cecece 0.5',
+    'weekendsFill': '#cecece 0.5',
 
     'zIndex': 5,
     'headerHeight': 70,

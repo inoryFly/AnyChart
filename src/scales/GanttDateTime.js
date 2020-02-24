@@ -1230,12 +1230,10 @@ anychart.scales.GanttDateTime.prototype.hasCalendar = function() {
 /**
  * Calculates working schedule.
  *
- * @param {anychart.enums.Interval=} opt_unit - TODO (A.Kudryavtsev): .
- * @param {number=} opt_count - TODO (A.Kudryavtsev): .
- * @return {Array.<anychart.resourceModule.Calendar.ScheduleItem>} - Gets current working schedule
+ * @return {Array.<anychart.ganttModule.Calendar.DailyScheduleData>} - Gets current working schedule
  *  defined by calendar settings.
  */
-anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function(opt_unit, opt_count) {
+anychart.scales.GanttDateTime.prototype.getWorkingSchedule = function() {
   if (this.calendar_) {
     this.calculate();
     var r = this.getRange();

@@ -104,8 +104,8 @@ anychart.ganttModule.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.NEED
 //region -- Type definitions.
 /**
  * @typedef {{
- *  from: number|undefined,
- *  to: number|undefined
+ *  from: (number|undefined),
+ *  to: (number|undefined)
  * }}
  */
 anychart.ganttModule.Calendar.DailyWorkingSchedule;
@@ -115,8 +115,8 @@ anychart.ganttModule.Calendar.DailyWorkingSchedule;
  * @typedef {{
  *  day: number,
  *  month: number,
- *  year: number|undefined,
- *  label: string|undefined
+ *  year: (number|undefined),
+ *  label: (string|undefined)
  * }}
  */
 anychart.ganttModule.Calendar.Holiday;
@@ -401,7 +401,7 @@ anychart.ganttModule.Calendar.prototype.schedule = function(opt_value) {
  * TODO (A.Kudryavtsev): JSDoc.
  *
  * @param {Array.<anychart.ganttModule.Calendar.Holiday>=} opt_value - User defined holidays.
- * @return {?Array.<anychart.ganttModule.Calendar.Holiday>|anychart.ganttModule.Calendar}
+ * @return {(?Array.<anychart.ganttModule.Calendar.Holiday>)|anychart.ganttModule.Calendar}
  */
 anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
   if (goog.isDef(opt_value)) {
@@ -437,6 +437,8 @@ anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, y
     var toHour = daySchedule['to'];
 
     var start = dateUTC.getTime();
+
+    // creates interval [0..fromHour] hours, length is (fromHour - 0) hours.
     var interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(fromHour);
     dateUTC.add(interval);
     var end = dateUTC.getTime();
@@ -446,6 +448,8 @@ anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, y
     });
 
     start = end;
+
+    // creates interval [fromHour..toHour] hours, length is (toHour - fromHour) hours.
     interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(toHour - fromHour);
     dateUTC.add(interval);
     end = dateUTC.getTime();
@@ -455,7 +459,9 @@ anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, y
     });
 
     start = end;
-    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(23 - toHour);
+
+    // creates interval [toHour..24] hours, length is (24 - toHour) hours.
+    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(24 - toHour);
     dateUTC.add(interval);
     end = dateUTC.getTime();
     data['notWorkingIntervals'].push({
@@ -503,7 +509,7 @@ anychart.ganttModule.Calendar.prototype.getDailyInfo_ = function(start, end) {
     res['notWorkingIntervals'].push({
       'from': start,
       'to': end
-    })
+    });
   } else {
     this.fillWorkingIntervals_(res, year, month, date, weekDay);
   }
