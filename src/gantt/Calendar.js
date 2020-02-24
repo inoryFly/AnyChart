@@ -23,6 +23,7 @@ goog.require('goog.object');
 anychart.ganttModule.Calendar = function() {
   anychart.ganttModule.Calendar.base(this, 'constructor');
 
+
   /**
    * Internal normalized representation of working schedule.
    *
@@ -31,6 +32,7 @@ anychart.ganttModule.Calendar = function() {
    */
   this.schedule_ = null;
 
+
   /**
    * Internal normalized representation of holidays.
    *
@@ -38,6 +40,7 @@ anychart.ganttModule.Calendar = function() {
    * @private
    */
   this.holidays_ = null;
+
 
   /**
    * Internal processed holidays data.
@@ -51,6 +54,7 @@ anychart.ganttModule.Calendar = function() {
     custom: {}
   };
 
+
   var locale = anychart.format.getDateTimeLocale(anychart.format.outputLocale());
 
   /**
@@ -59,25 +63,25 @@ anychart.ganttModule.Calendar = function() {
    * NOTE: locale weekend range is represented as array of two numbers.
    * First number is weekend start, second one is weekend end.
    * This way presumes that weekend is is exactly the range: weekend can't be
-   * monday and friday. This is a difference between this.localeWeekendRange_
-   * and this.actualWeekends_.
+   * monday and friday.
    *
    * @type {Array.<number>}
    * @private
    */
   this.localeWeekendRange_ = goog.array.clone(locale['weekendRange']);
 
+
   /**
    * Actual weekends. Can be overridden by working schedule.
    *
-   * NOTE: this.actualWeekends_ is an array of exact holidays set:
-   * [1, 3, 5] means that monday, wednesday and friday are weekend days,
-   * this is a difference between this.actualWeekends_ and this.localeWeekendRange_.
+   * NOTE: this.actualWeekends_ is a map of exact holidays set:
+   * { '1': true, '3': true, '5': true } means that monday, wednesday and friday are weekend days,
    *
-   * @type {Array.<number>}
+   * @type {Object.<boolean>}
    * @private
    */
   this.actualWeekends_ = this.turnWeekendRangeToExactDays_(this.localeWeekendRange_);
+
 
   /**
    * Daily info cache.
@@ -154,6 +158,7 @@ anychart.ganttModule.Calendar.DailyScheduleData;
  */
 anychart.ganttModule.Calendar.DAY_INTERVAL = new goog.date.Interval(0, 0, 1);
 
+
 /**
  * Single hour interval.
  *
@@ -171,7 +176,7 @@ anychart.ganttModule.Calendar.HOUR_INTERVAL = new goog.date.Interval(0, 0, 0, 1)
  * @private
  */
 anychart.ganttModule.Calendar.prototype.dropCache_ = function() {
-  this.cache_ = {};
+  this.dailyCache_ = {};
 };
 
 
@@ -191,19 +196,37 @@ anychart.ganttModule.Calendar.prototype.dropHolidaysData_ = function() {
 
 
 /**
- * Turns weekend range like [3, 6] to exact weekends like [3, 4, 5, 6].
+ * Turns weekend range to exact values in some tricky way:
+ *  1) weekendRange zero is Monday.
+ *  2) UTC zero is Sunday.
+ *  3) range where zero is Monday needs to be converted to map where zero is Sunday like
+ *      [3, 6] -> to exact weekends like { 3, 4, 5, 6 }.
+ *
+ *     See table below:
+ *
+ *      Indexes of weekday | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+ *      -------------------+---+---+---+---+---+---+---|
+ *      Weekend Range      | M | T | W | T | F | S | S |
+ *      -------------------+---+---+---+---+---+---+---|
+ *      UTC days indexes   | S | M | T | W | T | F | S |
+ *
+ *     It means that 0 needs to be converted to 1
+ *                   1 needs to be converted to 2
+ *                   ...
+ *                   6 needs to be converted to 0
  *
  * @param {Array.<number>} range - Weekend range.
- * @return {Array.<number>} - Exact weekends.
+ * @return {Object.<boolean>} - Exact weekends map.
  * @private
  */
 anychart.ganttModule.Calendar.prototype.turnWeekendRangeToExactDays_ = function(range) {
-  var weekendStart = range[0];
-  var weekendEnd = range[1];
-  var rv = [];
+  var weekendRangeStart = range[0];
+  var weekendRangeEnd = range[1];
 
-  for (var i = weekendStart; i <= weekendEnd; i++) {
-    rv.push(i);
+  var rv = {};
+  for (var i = weekendRangeStart; i <= weekendRangeEnd; i++) {
+    var converted = (i + 1) % 7;
+    rv[String(converted)] = true;
   }
 
   return rv;
@@ -212,7 +235,7 @@ anychart.ganttModule.Calendar.prototype.turnWeekendRangeToExactDays_ = function(
 
 /**
  *
- * @param {anychart.ganttModule.Calendar.DailyWorkingSchedule} val - Day to check.
+ * @param {?anychart.ganttModule.Calendar.DailyWorkingSchedule} val - Day to check.
  * @private
  * @return {?anychart.ganttModule.Calendar.DailyWorkingSchedule}
  */
@@ -299,7 +322,7 @@ anychart.ganttModule.Calendar.prototype.normalizeWorkingSchedule_ = function(sch
  *
  * @param {Array.<anychart.ganttModule.Calendar.Holiday>} holidays - Raw holidays data.
  * @private
- * @return {?Array.<anychart.ganttModule.calendar.Calendar.Holiday>} - Normalized holidays.
+ * @return {?Array.<anychart.ganttModule.Calendar.Holiday>} - Normalized holidays.
  */
 anychart.ganttModule.Calendar.prototype.normalizeHolidays_ = function(holidays) {
   if (goog.typeOf(holidays) === 'array') {
@@ -324,12 +347,12 @@ anychart.ganttModule.Calendar.prototype.normalizeHolidays_ = function(holidays) 
  * @private
  */
 anychart.ganttModule.Calendar.prototype.defineWeekendRange_ = function() {
-  this.actualWeekends_.length = 0;
+  this.actualWeekends_ = {};
   if (this.schedule_) {
     for (var i = 0; i < this.schedule_.length; i++) {
       var day = this.schedule_[i];
       if (!day) { // null in normalized this.schedule_ is a weekend.
-        this.actualWeekends_.push(i);
+        this.actualWeekends_[String(i)] = true;
       }
     }
   } else {
@@ -414,6 +437,7 @@ anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
   return this.holidays_;
 };
 
+
 /**
  * Fills passed working and not working data arrays with working and not working data.
  * TODO (A.Kudryavtsev): Yes, I know here are too many parameters. But it's already calculated, no need to recalculate it.
@@ -427,47 +451,49 @@ anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
  * @private
  */
 anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, year, month, date, dayOfWeek) {
-  /*
-    TODO (A.Kudryavtsev): Explain and refactor!!!
-   */
-  var dateUTC = new goog.date.UtcDateTime(year, month, date);
-  var daySchedule = this.schedule_[dayOfWeek];
-  if (daySchedule) { // By idea, if must be always defined, but who knows...
-    var fromHour = daySchedule['from'];
-    var toHour = daySchedule['to'];
+  if (this.schedule_) {
+    /*
+      TODO (A.Kudryavtsev): Explain and refactor!!!
+     */
+    var dateUTC = new goog.date.UtcDateTime(year, month, date);
+    var daySchedule = this.schedule_[dayOfWeek];
+    if (daySchedule) { // By idea, if must be always defined, but who knows...
+      var fromHour = daySchedule['from'];
+      var toHour = daySchedule['to'];
 
-    var start = dateUTC.getTime();
+      var start = dateUTC.getTime();
 
-    // creates interval [0..fromHour] hours, length is (fromHour - 0) hours.
-    var interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(fromHour);
-    dateUTC.add(interval);
-    var end = dateUTC.getTime();
-    data['notWorkingIntervals'].push({
-      'from': start,
-      'to': end - 1
-    });
+      // creates interval [0..fromHour] hours, length is (fromHour - 0) hours.
+      var interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(fromHour);
+      dateUTC.add(interval);
+      var end = dateUTC.getTime();
+      data['notWorkingIntervals'].push({
+        'from': start,
+        'to': end - 1
+      });
 
-    start = end;
+      start = end;
 
-    // creates interval [fromHour..toHour] hours, length is (toHour - fromHour) hours.
-    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(toHour - fromHour);
-    dateUTC.add(interval);
-    end = dateUTC.getTime();
-    data['workingIntervals'].push({
-      'from': start,
-      'to': end - 1
-    });
+      // creates interval [fromHour..toHour] hours, length is (toHour - fromHour) hours.
+      interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(toHour - fromHour);
+      dateUTC.add(interval);
+      end = dateUTC.getTime();
+      data['workingIntervals'].push({
+        'from': start,
+        'to': end - 1
+      });
 
-    start = end;
+      start = end;
 
-    // creates interval [toHour..24] hours, length is (24 - toHour) hours.
-    interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(24 - toHour);
-    dateUTC.add(interval);
-    end = dateUTC.getTime();
-    data['notWorkingIntervals'].push({
-      'from': start,
-      'to': end - 1
-    });
+      // creates interval [toHour..24] hours, length is (24 - toHour) hours.
+      interval = anychart.ganttModule.Calendar.HOUR_INTERVAL.times(24 - toHour);
+      dateUTC.add(interval);
+      end = dateUTC.getTime();
+      data['notWorkingIntervals'].push({
+        'from': start,
+        'to': end - 1
+      });
+    }
   }
 };
 
@@ -489,12 +515,12 @@ anychart.ganttModule.Calendar.prototype.getDailyInfo_ = function(start, end) {
 
   var cacheKey = year + '-' + month + '-' + date;
   var yearlyKey = month + '-' + date;
-  var res = this.cache_[cacheKey];
+  var res = this.dailyCache_[cacheKey];
   if (goog.isDef(res))
     return res;
 
   var isHoliday = !!(this.holidaysData_.yearly[yearlyKey] || this.holidaysData_.custom[cacheKey]);
-  var isWeekend = goog.array.contains(this.actualWeekends_, weekDay);
+  var isWeekend = !!(this.actualWeekends_[weekDay]);
 
   res = /** @type {anychart.ganttModule.Calendar.DailyScheduleData} */ ({
     'isHoliday': isHoliday,
@@ -514,7 +540,7 @@ anychart.ganttModule.Calendar.prototype.getDailyInfo_ = function(start, end) {
     this.fillWorkingIntervals_(res, year, month, date, weekDay);
   }
 
-  this.cache_[cacheKey] = res;
+  this.dailyCache_[cacheKey] = res;
   return res;
 };
 
