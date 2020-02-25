@@ -604,7 +604,41 @@ anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate,
 
 //endregion
 //region -- Serialization/Deserialization.
-//TODO (A.Kudryavtsev): TBA!!!
+/**
+ * @inheritDoc
+ */
+anychart.ganttModule.Calendar.prototype.serialize = function() {
+  var json = anychart.ganttModule.Calendar.base(this, 'serialize');
+
+  /*
+    NOTE:
+    JSON-operations is the easiest way to process 'null'-values to be suitable for chart.toXml() conversion.
+   */
+  if (this.schedule_ && !goog.object.isEmpty(this.schedule_)) {
+    json['schedule'] = JSON.parse(JSON.stringify(this.schedule_));
+  }
+
+  if (this.holidays_ && !goog.object.isEmpty(this.holidays_)) {
+    json['holidays'] = JSON.parse(JSON.stringify(this.holidays_));
+  }
+
+  return json;
+};
+
+
+/** @inheritDoc */
+anychart.ganttModule.Calendar.prototype.setupByJSON = function(config, opt_default) {
+  anychart.ganttModule.Calendar.base(this, 'setupByJSON', config, opt_default);
+
+  if ('schedule' in config) {
+    this.schedule(config['schedule']);
+  }
+
+  if ('holidays' in config) {
+    this.holidays(config['holidays']);
+  }
+};
+
 
 //endregion
 //region -- Exports.

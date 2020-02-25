@@ -1014,6 +1014,12 @@ anychart.scales.GanttDateTime.prototype.calendar = function(opt_value) {
   if (!this.calendar_) {
     this.calendar_ = new anychart.ganttModule.Calendar();
     this.calendar_.listenSignals(this.handleCalendarSignal_, this);
+
+    /*
+      This dispatching is required to redraw chart with default
+      locale weekend range on calendar initialization.
+     */
+    this.dispatchSignal(anychart.Signal.NEEDS_REAPPLICATION);
   }
   return this.calendar_;
 };
@@ -1335,8 +1341,12 @@ anychart.scales.GanttDateTime.prototype.serialize = function() {
   if (this.fiscalYearStartMonth_ > 1)
     json['fiscalYearStartMonth'] = this.fiscalYearStartMonth_;
 
-  if (this.calendar_)
-    json['calendar'] = this.calendar_.serialize();
+  if (this.calendar_) {
+    var calendarConfig = this.calendar_.serialize();
+    if (!goog.object.isEmpty(calendarConfig)) {
+      json['calendar'] = calendarConfig;
+    }
+  }
 
   return json;
 };
