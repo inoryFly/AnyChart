@@ -603,6 +603,10 @@ anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate,
 
 
 //endregion
+//region -- Serialization/Deserialization.
+//TODO (A.Kudryavtsev): TBA!!!
+
+//endregion
 //region -- Exports.
 //exports
 (function() {
