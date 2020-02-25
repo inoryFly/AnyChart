@@ -65,6 +65,10 @@ anychart.ganttModule.Calendar = function() {
    * This way presumes that weekend is is exactly the range: weekend can't be
    * monday and friday.
    *
+   * Weekend range is organized a little bit another way than UTC week days:
+   *  - weekend range zero day is Monday.
+   *  - UTC week zero day is Sunday.
+   *
    * @type {Array.<number>}
    * @private
    */
@@ -75,7 +79,8 @@ anychart.ganttModule.Calendar = function() {
    * Actual weekends. Can be overridden by working schedule.
    *
    * NOTE: this.actualWeekends_ is a map of exact holidays set:
-   * { '1': true, '3': true, '5': true } means that monday, wednesday and friday are weekend days,
+   * { '1': true, '3': true, '5': true } means that monday, wednesday
+   * and friday are weekend days.
    *
    * @type {Object.<boolean>}
    * @private
@@ -107,6 +112,9 @@ anychart.ganttModule.Calendar.prototype.SUPPORTED_SIGNALS = anychart.Signal.NEED
 //endregion
 //region -- Type definitions.
 /**
+ * Represents working interval of a single day.
+ * from: 10, to: 18 means that working hours are from 10:00 to 18:00.
+ *
  * @typedef {{
  *  from: (number|undefined),
  *  to: (number|undefined)
@@ -116,6 +124,13 @@ anychart.ganttModule.Calendar.DailyWorkingSchedule;
 
 
 /**
+ * Holiday info type definition.
+ * day-field is a day of month, month is a number of month in year (0 is January).
+ * If year-field is defined, it means exact-date holiday.
+ * If year-field is not set, it means yearly holiday.
+ * Label is optional and is not used in any visual appearance in current (24 Feb 2020)
+ * implementation.
+ *
  * @typedef {{
  *  day: number,
  *  month: number,
@@ -127,6 +142,9 @@ anychart.ganttModule.Calendar.Holiday;
 
 
 /**
+ * Holidays data cache calculated for current calendar setup.
+ * Contains data about yearly and custom holidays.
+ *
  * @typedef {{
  *  yearly: Object,
  *  custom: Object
@@ -136,6 +154,8 @@ anychart.ganttModule.Calendar.HolidaysData;
 
 
 /**
+ * Full working daily info.
+ *
  * @typedef {{
  *  isWeekend: boolean,
  *  isHoliday: boolean,
@@ -234,6 +254,8 @@ anychart.ganttModule.Calendar.prototype.turnWeekendRangeToExactDays_ = function(
 
 
 /**
+ * Normalizes custom user-input schedule to strict one.
+ * Can be normalized to null if everything goes bad.
  *
  * @param {?anychart.ganttModule.Calendar.DailyWorkingSchedule} val - Day to check.
  * @private
@@ -563,7 +585,7 @@ anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate,
   if (isNaN(start) || isNaN(end))
     return rv;
 
-  start = anychart.utils.alignDateLeftByUnit(start, anychart.enums.Interval.DAY, 1, start); //TODO (A.Kudryavtsev): Do we need it?
+  start = anychart.utils.alignDateLeftByUnit(start, anychart.enums.Interval.DAY, 1, start);
   var date = new Date(start);
   var current = new goog.date.UtcDateTime(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
   var dayStartTimestamp = current.getTime();
