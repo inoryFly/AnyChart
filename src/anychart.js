@@ -693,14 +693,7 @@ anychart.getFlatTheme = function(themePath, opt_flatTheme, opt_resolver) {
     }
 
     if (goog.isDef(theme)) {
-      if (goog.typeOf(theme) != 'object') {
-        if (goog.isFunction(opt_resolver))
-          theme = opt_resolver(theme);
-        else if (goog.isBoolean(theme))
-          theme = {'enabled': theme};
-        else
-          theme = null;
-      } else {
+      if (goog.typeOf(theme) == 'object') {
         var padding = theme.padding;
         if (goog.isDef(padding) && goog.typeOf(padding) != 'object') {
           theme.padding = anychart.core.utils.Space.normalizeSpace(padding);
@@ -710,6 +703,13 @@ anychart.getFlatTheme = function(themePath, opt_flatTheme, opt_resolver) {
         if (goog.isDef(margin) && goog.typeOf(margin) != 'object') {
           theme.margin = anychart.core.utils.Space.normalizeSpace(margin);
         }
+      } else {
+        if (goog.isFunction(opt_resolver))
+          theme = opt_resolver(theme);
+        else if (goog.isBoolean(theme))
+          theme = {'enabled': theme};
+        else
+          theme = null;
       }
 
       if (theme)
