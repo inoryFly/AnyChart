@@ -563,10 +563,10 @@ anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP = (function() {
   rv[anychart.enums.Interval.DAY] = 4;
   rv[anychart.enums.Interval.WEEK] = 5;
   rv[anychart.enums.Interval.THIRD_OF_MONTH] = 6;
-  rv[anychart.enums.Interval.MONTH] = 6;
-  rv[anychart.enums.Interval.QUARTER] = 7;
-  rv[anychart.enums.Interval.SEMESTER] = 8;
-  rv[anychart.enums.Interval.YEAR] = 9;
+  rv[anychart.enums.Interval.MONTH] = 7;
+  rv[anychart.enums.Interval.QUARTER] = 8;
+  rv[anychart.enums.Interval.SEMESTER] = 9;
+  rv[anychart.enums.Interval.YEAR] = 10;
 
   return rv;
 })();
@@ -5357,10 +5357,10 @@ anychart.ganttModule.TimeLine.prototype.drawCalendar_ = function() {
 
     for (var i = 0; i < workingSchedule.length; i++) {
       var singleWorkingScheduleItemInfo = workingSchedule[i];
-      var start = singleWorkingScheduleItemInfo.start;
-      var end = singleWorkingScheduleItemInfo.end;
-      var isHoliday = singleWorkingScheduleItemInfo.isHoliday;
-      var isWeekend = singleWorkingScheduleItemInfo.isWeekend;
+      var start = singleWorkingScheduleItemInfo['start'];
+      var end = singleWorkingScheduleItemInfo['end'];
+      var isHoliday = singleWorkingScheduleItemInfo['isHoliday'];
+      var isWeekend = singleWorkingScheduleItemInfo['isWeekend'];
 
       if (isHoliday) {
         if (this.currentLowerTicksUnit_ === anychart.enums.Interval.DAY) {

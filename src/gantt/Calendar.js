@@ -79,8 +79,8 @@ anychart.ganttModule.Calendar = function() {
    * Actual weekends. Can be overridden by working schedule.
    *
    * NOTE: this.actualWeekends_ is a map of exact holidays set:
-   * { '1': true, '3': true, '5': true } means that monday, wednesday
-   * and friday are weekend days.
+   * { '0': true, '1': true, '3': true, '5': true } means that sunday, monday,
+   * wednesday and friday are weekend days.
    *
    * @type {Object.<boolean>}
    * @private
