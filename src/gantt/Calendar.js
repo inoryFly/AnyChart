@@ -604,6 +604,12 @@ anychart.ganttModule.Calendar.prototype.getWorkingSchedule = function(startDate,
 
 //endregion
 //region -- Exports.
-
+//exports
+(function() {
+  var proto = anychart.ganttModule.Calendar.prototype;
+  proto['schedule'] = proto.schedule;
+  proto['holidays'] = proto.holidays;
+  proto['getWorkingSchedule'] = proto.getWorkingSchedule;
+})();
 
 //endregion
