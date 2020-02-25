@@ -700,6 +700,16 @@ anychart.getFlatTheme = function(themePath, opt_flatTheme, opt_resolver) {
           theme = {'enabled': theme};
         else
           theme = null;
+      } else {
+        var padding = theme.padding;
+        if (goog.isDef(padding) && goog.typeOf(padding) != 'object') {
+          theme.padding = anychart.core.utils.Space.normalizeSpace(padding);
+        }
+
+        var margin = theme.margin;
+        if (goog.isDef(margin) && goog.typeOf(margin) != 'object') {
+          theme.margin = anychart.core.utils.Space.normalizeSpace(margin);
+        }
       }
 
       if (theme)
