@@ -857,7 +857,8 @@ goog.exportSymbol('anychart.themes.defaultTheme', {
     'offsetX': 0,
     'offsetY': 0,
     'enabled': true,
-    'disablePointerEvents': true
+    'disablePointerEvents': true,
+    'textShadow': '1px 1px 1px red'
   },
 
 

@@ -167,7 +167,8 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
     ['enabled', 0, anychart.Signal.ENABLED_STATE_CHANGED, 0, this.resetFlatSettings],
     ['selectable', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
     ['disablePointerEvents', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
-    ['autoRotate', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings]
+    ['autoRotate', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
+    ['textShadow', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings]
   ]);
 
   if (!opt_skipDefaultThemes) {
@@ -270,7 +271,8 @@ anychart.core.ui.LabelsSettings.DESCRIPTORS = (function() {
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'enabled', anychart.core.settings.boolOrNullNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'selectable', anychart.core.settings.booleanNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'disablePointerEvents', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'autoRotate', anychart.core.settings.booleanNormalizer]
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'autoRotate', anychart.core.settings.booleanNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textShadow', anychart.core.settings.stringNormalizer]
   ]);
 
   return map;
