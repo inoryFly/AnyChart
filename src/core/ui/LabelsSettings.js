@@ -146,6 +146,7 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
     ['maxFontSize', 0, 0], //TODO (A.Kudryavtsev): Not supported for a while.
     ['minFontSize', 0, 0], //TODO (A.Kudryavtsev): Not supported for a while.
     ['vAlign', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
+    ['textShadow', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
 
     //Only left, middle and right position. Has no BOUNDS_CHANGED because affects only positioning, not bounds.
     ['anchor', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
@@ -167,8 +168,7 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
     ['enabled', 0, anychart.Signal.ENABLED_STATE_CHANGED, 0, this.resetFlatSettings],
     ['selectable', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
     ['disablePointerEvents', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
-    ['autoRotate', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings],
-    ['textShadow', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings]
+    ['autoRotate', 0, anychart.Signal.NEEDS_REDRAW, 0, this.resetFlatSettings]
   ]);
 
   if (!opt_skipDefaultThemes) {
@@ -242,6 +242,7 @@ anychart.core.ui.LabelsSettings.DESCRIPTORS = (function() {
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'letterSpacing', anychart.core.settings.numberOrStringNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textDirection', anychart.enums.normalizeTextDirection],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textIndent', anychart.core.settings.numberNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textShadow', acgraph.vector.normalizeTextShadow],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textOverflow', anychart.core.settings.boolOrNullNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'useHtml', anychart.core.settings.booleanNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'wordBreak', anychart.core.settings.asIsNormalizer],
@@ -271,8 +272,7 @@ anychart.core.ui.LabelsSettings.DESCRIPTORS = (function() {
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'enabled', anychart.core.settings.boolOrNullNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'selectable', anychart.core.settings.booleanNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'disablePointerEvents', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'autoRotate', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'textShadow', anychart.core.settings.stringNormalizer]
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'autoRotate', anychart.core.settings.booleanNormalizer]
   ]);
 
   return map;
