@@ -105,6 +105,7 @@ goog.inherits(anychart.tableModule.elements.Base, goog.Disposable);
  *  fontWeight: (string|number|undefined),
  *  letterSpacing: (string|number|undefined),
  *  textDirection: (anychart.enums.TextDirection|undefined),
+ *  fontColor: (string|undefined),
  *  lineHeight: (string|number|undefined),
  *  textIndent: (number|undefined),
  *  vAlign: (anychart.enums.VAlign|undefined),
@@ -272,6 +273,17 @@ anychart.tableModule.elements.Base.prototype.textDirection = function(opt_value)
     opt_value = anychart.enums.normalizeTextDirection(opt_value);
   }
   return /** @type {!anychart.tableModule.elements.Base|anychart.enums.TextDirection} */(this.settings('textDirection', opt_value));
+};
+
+
+/**
+ * Getter/setter for textShadow.
+ * @param {string=} opt_value .
+ * @return {!anychart.tableModule.Table|string} .
+ */
+anychart.tableModule.elements.Base.prototype.textShadow = function(opt_value) {
+  if (goog.isDef(opt_value)) opt_value = acgraph.vector.normalizeTextShadow(opt_value);
+  return /** @type {!anychart.tableModule.Table|string} */(this.settings('textShadow', opt_value));
 };
 
 
