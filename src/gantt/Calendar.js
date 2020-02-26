@@ -267,7 +267,7 @@ anychart.ganttModule.Calendar.prototype.normalizeValidWorkingDay_ = function(val
     var to = +val['to'];
 
     // This comparison considers NaN values.
-    if (from < to && (from >= 0 && from <= 23) && (to >= 0 && to <= 23)) {
+    if (from < to && (from >= 0 && from < 24) && (to > 0 && to <= 24)) {
       // TODO (A.Kudryavtsev): Should we round these values?
       return {
         'from': from,
