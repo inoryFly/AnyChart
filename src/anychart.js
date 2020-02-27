@@ -694,15 +694,7 @@ anychart.getFlatTheme = function(themePath, opt_flatTheme, opt_resolver) {
 
     if (goog.isDef(theme)) {
       if (goog.typeOf(theme) == 'object') {
-        // Normalize margins and paddings.
-        var fields = ['padding', 'margin'];
-        for (var i = 0; i < fields.length; i++) {
-          var field = fields[i];
-          var value = theme[field];
-          if (goog.isDef(value) && goog.typeOf(value) != 'object') {
-            theme[field] = anychart.core.utils.Space.normalizeSpace(value);
-          }
-        }
+        theme = anychart.utils.normalizeTheme(theme);
       } else {
         if (goog.isFunction(opt_resolver))
           theme = opt_resolver(theme);

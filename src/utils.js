@@ -3000,6 +3000,25 @@ anychart.utils.getFadeGradient = function(ratio, opacity, fontColor, opt_fadeSte
 };
 
 
+/**
+ * Normalize theme items.
+ * @param {Object} theme - Theme object.
+ * @return {Object} - Normalized theme.
+ */
+anychart.utils.normalizeTheme = function(theme) {
+  // Normalize margins and paddings.
+  var fields = ['padding', 'margin'];
+  for (var i = 0; i < fields.length; i++) {
+    var field = fields[i];
+    var value = theme[field];
+    if (goog.isDef(value) && goog.typeOf(value) != 'object') {
+      theme[field] = anychart.core.utils.Space.normalizeSpace(value);
+    }
+  }
+  return theme;
+};
+
+
 //region -- Async actions.
 /**
  * Executes fn-function in next execution frame.
