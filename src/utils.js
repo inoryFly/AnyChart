@@ -3000,6 +3000,22 @@ anychart.utils.getFadeGradient = function(ratio, opacity, fontColor, opt_fadeSte
 };
 
 
+/**
+ * Removes fields from object if field is empty object.
+ * @param {!Object} json - Object with fields.
+ * @return {!Object} - Cleaned object.
+ */
+anychart.utils.processJson = function(json) {
+  for (var i in json) {
+    var item = json[i];
+    if (goog.typeOf(item) == 'object' && goog.object.isEmpty(item)) {
+      delete json[i];
+    }
+  }
+  return json;
+};
+
+
 //region -- Async actions.
 /**
  * Executes fn-function in next execution frame.

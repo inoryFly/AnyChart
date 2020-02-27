@@ -1160,7 +1160,7 @@ anychart.core.ui.LabelsFactory.prototype.disposeInternal = function() {
 /** @inheritDoc */
 anychart.core.ui.LabelsFactory.prototype.serialize = function() {
   var json = anychart.core.ui.LabelsFactory.base(this, 'serialize');
-  if (goog.isDef(json['enabled'])) delete json['enabled'];
+  if (!goog.isDef(json['enabled'])) delete json['enabled'];
 
   var val;
   if (this.hasOwnOption('background') && !goog.object.isEmpty(this.ownSettings['background'])) {

@@ -105,7 +105,7 @@ goog.inherits(anychart.tableModule.elements.Base, goog.Disposable);
  *  fontWeight: (string|number|undefined),
  *  letterSpacing: (string|number|undefined),
  *  textDirection: (anychart.enums.TextDirection|undefined),
- *  fontColor: (string|undefined),
+ *  textShadow: (string|undefined),
  *  lineHeight: (string|number|undefined),
  *  textIndent: (number|undefined),
  *  vAlign: (anychart.enums.VAlign|undefined),
@@ -278,8 +278,8 @@ anychart.tableModule.elements.Base.prototype.textDirection = function(opt_value)
 
 /**
  * Getter/setter for textShadow.
- * @param {string=} opt_value .
- * @return {!anychart.tableModule.Table|string} .
+ * @param {string=} opt_value - Text shadow settings.
+ * @return {!anychart.tableModule.Table|string} - Chart instance or textShadow settings.
  */
 anychart.tableModule.elements.Base.prototype.textShadow = function(opt_value) {
   if (goog.isDef(opt_value)) opt_value = acgraph.vector.normalizeTextShadow(opt_value);

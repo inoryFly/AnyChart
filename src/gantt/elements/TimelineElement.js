@@ -840,7 +840,8 @@ anychart.ganttModule.elements.TimelineElement.prototype.serialize = function() {
   var tooltip = this.tooltip().serialize();
   if (!goog.object.isEmpty(tooltip))
     json['tooltip'] = tooltip;
-  return json;
+
+  return anychart.utils.processJson(json);
 };
 
 

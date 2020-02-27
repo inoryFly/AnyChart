@@ -1190,7 +1190,7 @@ anychart.core.ui.OptimizedText.prototype.getDivStyle = function(width, height) {
     result += ('word-break: ' + style['wordBreak'] + '; ');
 
   if ('textShadow' in style && style['textShadow'] != 'none')
-    result += ('text-shadow: ' + style['textShadow'] + ' ');
+    result += ('text-shadow: ' + style['textShadow'] + '; ');
 
   result += (
       'width: ' + width + 'px; ' +

@@ -882,8 +882,8 @@ anychart.tableModule.Table.prototype.textDirection = function(opt_value) {
 
 /**
  * Getter/setter for textShadow.
- * @param {string=} opt_value .
- * @return {!anychart.tableModule.Table|string} .
+ * @param {string=} opt_value - Text shadow settings.
+ * @return {!anychart.tableModule.Table|string} - Chart instance or text shadow settings.
  */
 anychart.tableModule.Table.prototype.textShadow = function(opt_value) {
   if (goog.isDef(opt_value)) opt_value = acgraph.vector.normalizeTextShadow(opt_value);
