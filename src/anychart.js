@@ -694,14 +694,14 @@ anychart.getFlatTheme = function(themePath, opt_flatTheme, opt_resolver) {
 
     if (goog.isDef(theme)) {
       if (goog.typeOf(theme) == 'object') {
-        var padding = theme.padding;
-        if (goog.isDef(padding) && goog.typeOf(padding) != 'object') {
-          theme.padding = anychart.core.utils.Space.normalizeSpace(padding);
-        }
-
-        var margin = theme.margin;
-        if (goog.isDef(margin) && goog.typeOf(margin) != 'object') {
-          theme.margin = anychart.core.utils.Space.normalizeSpace(margin);
+        // Normalize margins and paddings.
+        var fields = ['padding', 'margin'];
+        for (var i = 0; i < fields.length; i++) {
+          var field = fields[i];
+          var value = theme[field];
+          if (goog.isDef(value) && goog.typeOf(value) != 'object') {
+            theme[field] = anychart.core.utils.Space.normalizeSpace(value);
+          }
         }
       } else {
         if (goog.isFunction(opt_resolver))
