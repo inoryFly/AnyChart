@@ -925,11 +925,11 @@ anychart.core.VisualBase.prototype.shareWithPinterest = function(opt_linkOrOptio
 anychart.core.VisualBase.prototype.serialize = function() {
   var json = anychart.core.VisualBase.base(this, 'serialize');
 
-  var zIndex = anychart.core.Base.prototype.getOwnOption.call(this, 'zIndex');
+  var zIndex = anychart.core.Base.prototype.getOption.call(this, 'zIndex');
   if (goog.isDef(zIndex))
     json['zIndex'] = zIndex;
 
-  var enabled = anychart.core.Base.prototype.getOwnOption.call(this, 'enabled');
+  var enabled = anychart.core.Base.prototype.getOption.call(this, 'enabled');
   if (goog.isDef(enabled))
     json['enabled'] = enabled;
 

@@ -1160,7 +1160,12 @@ anychart.core.ui.LabelsFactory.prototype.disposeInternal = function() {
 /** @inheritDoc */
 anychart.core.ui.LabelsFactory.prototype.serialize = function() {
   var json = anychart.core.ui.LabelsFactory.base(this, 'serialize');
-  if (!goog.isDef(json['enabled'])) delete json['enabled'];
+
+  // Base method saves theme option into json but only own option needed.
+  delete json['enabled'];
+  if (this.hasOwnOption('enabled')) {
+    json['enabled'] = this.getOwnOption('enabled');
+  }
 
   var val;
   if (this.hasOwnOption('background') && !goog.object.isEmpty(this.ownSettings['background'])) {
