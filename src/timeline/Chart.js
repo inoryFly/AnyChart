@@ -89,6 +89,13 @@ anychart.timelineModule.Chart = function() {
   this.horizontalTranslate = 0;
 
   /**
+   * Vertical translate ratio, used to preserve
+   * chart vertical position on resize.
+   * @type {number}
+   */
+  this.verticalTranslateRatio = 0;
+
+  /**
    * Automagically translate chart so, that there are no white spaces.
    * Works only if one side has free space and other don't.
    * @type {boolean}
@@ -969,15 +976,18 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
 
 /**
  * Set vertical offset range.
- * @param min
- * @param max
- * @return {{min: *, max: *}}
+ * @param {number} min - Minimal offset
+ * @param {number} max - Maximal offset
+ * @return {anychart.timelineModule.Chart|{min: number, max: number}}
  */
 anychart.timelineModule.Chart.prototype.verticalOffsets = function(min, max) {
-  if (min != this.minVerticalOffset || max != this.maxVerticalOffset) {
-    this.minVerticalOffset = min;
-    this.maxVerticalOffset = max;
-    this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+  if (goog.isDef(min)) {
+    if (min != this.minVerticalOffset || max != this.maxVerticalOffset) {
+      this.minVerticalOffset = min;
+      this.maxVerticalOffset = max;
+      this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL, anychart.Signal.NEEDS_REDRAW);
+    }
+    return this;
   }
 
   return {
@@ -1055,6 +1065,7 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
     this.dataBounds = bounds.clone();
+    this.verticalTranslate = this.verticalTranslateRatio * this.dataBounds.height;
     this.invalidate(anychart.ConsistencyState.AXES_CHART_AXES | anychart.ConsistencyState.SERIES_CHART_SERIES |
         anychart.ConsistencyState.AXES_CHART_AXES_MARKERS | anychart.ConsistencyState.CARTESIAN_X_SCROLLER);
     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL);
@@ -1293,6 +1304,9 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
     if (dy != 0) {
       this.verticalTranslate = goog.math.clamp(y, this.minVerticalOffset, this.maxVerticalOffset);
     }
+
+    // Update vertical translate ratio.
+    this.verticalTranslateRatio = this.verticalTranslate / this.dataBounds.height;
 
     var leftDate = this.scale().inverseTransform(this.horizontalTranslate / this.dataBounds.width);
     var rightDate = this.scale().inverseTransform((this.horizontalTranslate + this.dataBounds.width) / this.dataBounds.width);
