@@ -317,7 +317,8 @@ anychart.ganttModule.Calendar.prototype.normalizeSingleHoliday_ = function(holid
 
 
 /**
- * TODO (A.Kudryavtsev): JSDoc.
+ * Normalizes potentially incorrect user input to valid suitable internal representation
+ * of working schedule.
  *
  * @param {Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>} schedule - Working
  *  schedule to be normalized.
@@ -425,7 +426,8 @@ anychart.ganttModule.Calendar.prototype.buildHolidaysData_ = function() {
 //endregion
 //region -- Public API.
 /**
- * TODO (A.Kudryavtsev): JSDoc.
+ * Getter/setter for user defined daily working schedule. This method sets weekly working days, weekends and working time.
+ * See API for more explanation.
  *
  * @param {Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>=} opt_value - User defined working schedule.
  * @return {?Array.<?anychart.ganttModule.Calendar.DailyWorkingSchedule>|anychart.ganttModule.Calendar}
@@ -443,7 +445,8 @@ anychart.ganttModule.Calendar.prototype.schedule = function(opt_value) {
 
 
 /**
- * TODO (A.Kudryavtsev): JSDoc.
+ * Setter for user defined holidays. This method sets exact-date or yearly holidays.
+ * See API for more explanation.
  *
  * @param {Array.<anychart.ganttModule.Calendar.Holiday>=} opt_value - User defined holidays.
  * @return {(?Array.<anychart.ganttModule.Calendar.Holiday>)|anychart.ganttModule.Calendar}
@@ -475,7 +478,7 @@ anychart.ganttModule.Calendar.prototype.holidays = function(opt_value) {
 anychart.ganttModule.Calendar.prototype.fillWorkingIntervals_ = function(data, year, month, date, dayOfWeek) {
   if (this.schedule_) {
     /*
-      TODO (A.Kudryavtsev): Explain and refactor!!!
+      TODO (A.Kudryavtsev): Left it as is and did not refactor because of tired pretty much.
      */
     var dateUTC = new goog.date.UtcDateTime(year, month, date);
     var daySchedule = this.schedule_[dayOfWeek];

@@ -1494,7 +1494,6 @@ anychart.ganttModule.BaseGrid.prototype.getClipLayer = function() {
  */
 anychart.ganttModule.BaseGrid.prototype.applyClip = function(clipRect) {
   this.getClipLayer().clip(clipRect);
-  // this.getCellsLayer().clip(clipRect);
 
   if (this.rangeLineMarkersLayer_) //Data grid doesn't create own markers layer.
     this.rangeLineMarkersLayer_.clip(clipRect);

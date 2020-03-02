@@ -1440,20 +1440,3 @@ anychart.scales.GanttDateTime.prototype.setupByJSON = function(config, opt_defau
 
 
 //endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
