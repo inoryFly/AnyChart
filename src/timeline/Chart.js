@@ -949,7 +949,8 @@ anychart.timelineModule.Chart.prototype.calculate = function() {
     var halfHeight = this.dataBounds.height / 2;
     var minOffset = halfHeight - Math.abs(this.totalRange.sY) - scrollerHeightBottom;
     var maxOffset = this.totalRange.eY - halfHeight - scrollerHeightTop;
-    if (this.totalRange.sY >= -halfHeight && this.totalRange.eY <= halfHeight) {
+    // If chart fits into container.
+    if ((this.totalRange.eY - this.totalRange.sY) <= this.dataBounds.height) {
       var lookingUp = intersectingBounds.momentUp.length + intersectingBounds.rangeUp.length;
       var lookingDown = intersectingBounds.momentDown.length + intersectingBounds.rangeDown.length;
       if (lookingUp && !lookingDown) {
