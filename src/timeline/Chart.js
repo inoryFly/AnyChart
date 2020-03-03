@@ -96,6 +96,18 @@ anychart.timelineModule.Chart = function() {
   this.verticalTranslateRatio = 0;
 
   /**
+   * Axis offset ratio off the chart center.
+   * @type {number}
+   */
+  this.axisVerticalTranslateRatio = 0;
+
+  /**
+   * This offset is used, when axis hits top/bottom.
+   * @type {number}
+   */
+  this.seriesAgainstAxisOffset = 0;
+
+  /**
    * Automagically translate chart so, that there are no white spaces.
    * Works only if one side has free space and other don't.
    * @type {boolean}
@@ -1065,7 +1077,8 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
     this.dataBounds = bounds.clone();
-    this.verticalTranslate = this.verticalTranslateRatio * this.dataBounds.height;
+    var height = this.dataBounds.height - this.axis().height();
+    this.verticalTranslate = this.axisVerticalTranslateRatio * height + this.seriesAgainstAxisOffset;
     this.invalidate(anychart.ConsistencyState.AXES_CHART_AXES | anychart.ConsistencyState.SERIES_CHART_SERIES |
         anychart.ConsistencyState.AXES_CHART_AXES_MARKERS | anychart.ConsistencyState.CARTESIAN_X_SCROLLER);
     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL);
@@ -1306,7 +1319,12 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
     }
 
     // Update vertical translate ratio.
-    this.verticalTranslateRatio = this.verticalTranslate / this.dataBounds.height;
+    var height = this.dataBounds.height - this.axis().height();
+    this.verticalTranslateRatio = this.verticalTranslate / height;
+    // clamp vertical translate ratio inbetween -0.5 and 0.5 and save it as axis translate ratio
+    this.axisVerticalTranslateRatio = Math.min(Math.max(-0.5, this.verticalTranslateRatio), 0.5);
+    // how much series must be shifted against axis
+    this.seriesAgainstAxisOffset = (this.verticalTranslateRatio - this.axisVerticalTranslateRatio) * height;
 
     var leftDate = this.scale().inverseTransform(this.horizontalTranslate / this.dataBounds.width);
     var rightDate = this.scale().inverseTransform((this.horizontalTranslate + this.dataBounds.width) / this.dataBounds.width);
@@ -1584,6 +1602,7 @@ anychart.timelineModule.Chart.prototype.verticalOffsetRatio = function(opt_value
     if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
       this.verticalTranslateRatio = opt_value;
       if (this.dataBounds) {
+        var height = this.dataBounds.height - this.axis().height();
         this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
       }
     }
