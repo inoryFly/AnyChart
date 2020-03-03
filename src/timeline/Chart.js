@@ -1573,6 +1573,26 @@ anychart.timelineModule.Chart.prototype.scroll = function(opt_value) {
 };
 
 
+/**
+ * Getter and setter of vertical offset ratio.
+ * Offset is calculated against chart container equator.
+ * Positive values push chart down. Negative - up.
+ * @param {number=} opt_value - vertical offset ratio.
+ * @return {anychart.timelineModule.Chart|number}
+ */
+anychart.timelineModule.Chart.prototype.verticalOffsetRatio = function(opt_value) {
+  if (goog.isDef(opt_value)) {
+    if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
+      this.verticalTranslateRatio = opt_value;
+      this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
+    }
+    return this;
+  }
+
+  return this.verticalTranslateRatio;
+};
+
+
 /** @inheritDoc */
 anychart.timelineModule.Chart.prototype.getType = function() {
   return anychart.enums.ChartTypes.TIMELINE;
@@ -1789,7 +1809,8 @@ anychart.timelineModule.Chart.prototype.setupByJSON = function(config, opt_defau
     this.axis(config['axis']);
   }
 
-  this.scroll(config['scroll']);
+  this.verticalOffsetRatio(config['verticalOffsetRatio']);
+  // this.scroll(config['scroll']);
 
   this.setupElements(config['lineAxesMarkers'], this.lineMarker);
   this.setupElements(config['textAxesMarkers'], this.textMarker);
@@ -1857,8 +1878,10 @@ anychart.timelineModule.Chart.prototype.serialize = function() {
   this.serializeSeries(json);
 
   json['type'] = this.getType();
-  if (goog.isDef(this.scroll_))
-    json['scroll'] = this.scroll_;
+  // if (goog.isDef(this.scroll_))
+  //   json['scroll'] = this.scroll_;
+
+  json['verticalOffsetRatio'] = this.verticalOffsetRatio();
 
   return {'chart': json};
 };
@@ -1966,6 +1989,7 @@ anychart.timelineModule.Chart.prototype.disposeInternal = function() {
 
   proto['forceScaleUpdate'] = proto.forceScaleUpdate;
   proto['getVisibleRange'] = proto.getVisibleRange;
+  proto['verticalOffsetRatio'] = proto.verticalOffsetRatio;
 })();
 //exports
 
