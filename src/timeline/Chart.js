@@ -1313,7 +1313,6 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
     var offset = leftDate - range['min'];
 
     var delta = totalRange['max'] - totalRange['min'];
-    var scroller = this.scroller();
     this.scroller().setRangeInternal((leftDate - totalRange['min']) / delta, (rightDate - totalRange['min']) / delta);
 
     //this is hack to redraw axis ticks and labels using offset
@@ -1584,7 +1583,9 @@ anychart.timelineModule.Chart.prototype.verticalOffsetRatio = function(opt_value
   if (goog.isDef(opt_value)) {
     if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
       this.verticalTranslateRatio = opt_value;
-      this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
+      if (this.dataBounds) {
+        this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
+      }
     }
     return this;
   }
