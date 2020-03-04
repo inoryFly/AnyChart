@@ -1594,22 +1594,51 @@ anychart.timelineModule.Chart.prototype.scroll = function(opt_value) {
  * Getter and setter of vertical offset ratio.
  * Offset is calculated against chart container equator.
  * Positive values push chart down. Negative - up.
- * @param {number=} opt_value - vertical offset ratio.
- * @return {anychart.timelineModule.Chart|number}
+ * @param {{axisRatio: number, seriesOffset: number}=} opt_value - vertical offset ratio.
+ * @return {anychart.timelineModule.Chart|{axisRatio: number, seriesOffset: number}}
  */
-anychart.timelineModule.Chart.prototype.verticalOffsetRatio = function(opt_value) {
+anychart.timelineModule.Chart.prototype.verticalRelativeOffset = function(opt_value) {
+  // if (goog.isDef(opt_value)) {
+  //   if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
+  //     this.verticalTranslateRatio = opt_value;
+  //     if (this.dataBounds) {
+  //       var height = this.dataBounds.height - this.axis().height();
+  //       this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
+  //     }
+  //   }
+  //   return this;
+  // }
+
   if (goog.isDef(opt_value)) {
-    if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
-      this.verticalTranslateRatio = opt_value;
-      if (this.dataBounds) {
-        var height = this.dataBounds.height - this.axis().height();
-        this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
-      }
-    }
+    var absoluteVerticalOffset = this.getAbsoluteOffset(opt_value);
+    this.moveTo(this.horizontalTranslate, absoluteVerticalOffset);
     return this;
   }
 
-  return this.verticalTranslateRatio;
+  return {
+    axisRatio: this.axisVerticalTranslateRatio,
+    seriesOffset: this.seriesAgainstAxisOffset
+  };
+
+  // return this.verticalTranslateRatio;
+};
+
+
+/**
+ * Converts offset based on combination of ratio and absolute values to absolute.
+ * @param {{axisRatio: number, seriesOffset: number}} value
+ * @return {number}
+ */
+anychart.timelineModule.Chart.prototype.getAbsoluteOffset = function(value) {
+  var axisRatio = value.axisRatio;
+  var seriesOffset = value.seriesOffset;
+
+  var absoluteOffset = axisRatio * (this.dataBounds.height - this.axis().height());
+  if (Math.abs(axisRatio) == 0.5) {
+    absoluteOffset += seriesOffset;
+  }
+
+  return absoluteOffset;
 };
 
 
@@ -1829,7 +1858,7 @@ anychart.timelineModule.Chart.prototype.setupByJSON = function(config, opt_defau
     this.axis(config['axis']);
   }
 
-  this.verticalOffsetRatio(config['verticalOffsetRatio']);
+  this.verticalRelativeOffset(config['verticalOffsetRatio']);
   // this.scroll(config['scroll']);
 
   this.setupElements(config['lineAxesMarkers'], this.lineMarker);
@@ -1901,7 +1930,7 @@ anychart.timelineModule.Chart.prototype.serialize = function() {
   // if (goog.isDef(this.scroll_))
   //   json['scroll'] = this.scroll_;
 
-  json['verticalOffsetRatio'] = this.verticalOffsetRatio();
+  json['verticalOffsetRatio'] = this.verticalRelativeOffset();
 
   return {'chart': json};
 };
@@ -2009,7 +2038,7 @@ anychart.timelineModule.Chart.prototype.disposeInternal = function() {
 
   proto['forceScaleUpdate'] = proto.forceScaleUpdate;
   proto['getVisibleRange'] = proto.getVisibleRange;
-  proto['verticalOffsetRatio'] = proto.verticalOffsetRatio;
+  proto['verticalRelativeOffset'] = proto.verticalRelativeOffset;
 })();
 //exports
 
