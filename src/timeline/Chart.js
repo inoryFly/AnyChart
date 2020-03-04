@@ -1592,8 +1592,11 @@ anychart.timelineModule.Chart.prototype.scroll = function(opt_value) {
 
 /**
  * Getter and setter of vertical offset ratio.
- * Offset is calculated against chart container equator.
- * Positive values push chart down. Negative - up.
+ * Relative offset consists of two components:
+ *  1) Axis ratio which lays in [-0.5, 0.5] where 0 is chart center
+ *    and uttermost values are half axis height from chart top and bottom.
+ *  2) Series offset value, which is relative to axis center line. Used
+ *    only when total (absolute) offset is out of the chart bounds minus axis height.
  * @param {{axisRatio: number, seriesOffset: number}=} opt_value - vertical offset ratio.
  * @return {anychart.timelineModule.Chart|{axisRatio: number, seriesOffset: number}}
  */
