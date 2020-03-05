@@ -108,6 +108,20 @@ anychart.timelineModule.Chart = function() {
   this.seriesAgainstAxisOffset = 0;
 
   /**
+   * Relative offset consists of two components:
+   *  1) Axis ratio which lays in [-0.5, 0.5] where 0 is chart center
+   *    and uttermost values are half axis height from chart top and bottom.
+   *  2) Series offset value, which is relative to axis center line. Used
+   *    only when total (absolute) offset is out of the chart bounds minus axis height.
+   * @type {{axisRatio: number, seriesOffset: number}}
+   * @private
+   */
+  this.verticalRelativeOffset_ = {
+    axisRatio: 0,
+    seriesOffset: 0
+  };
+
+  /**
    * Automagically translate chart so, that there are no white spaces.
    * Works only if one side has free space and other don't.
    * @type {boolean}
@@ -1077,8 +1091,6 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
 
   if (this.hasInvalidationState(anychart.ConsistencyState.BOUNDS)) {
     this.dataBounds = bounds.clone();
-    var height = this.dataBounds.height - this.axis().height();
-    this.verticalTranslate = this.axisVerticalTranslateRatio * height + this.seriesAgainstAxisOffset;
     this.invalidate(anychart.ConsistencyState.AXES_CHART_AXES | anychart.ConsistencyState.SERIES_CHART_SERIES |
         anychart.ConsistencyState.AXES_CHART_AXES_MARKERS | anychart.ConsistencyState.CARTESIAN_X_SCROLLER);
     this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL);
@@ -1102,6 +1114,8 @@ anychart.timelineModule.Chart.prototype.drawContent = function(bounds) {
 
   if (this.hasStateInvalidation(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL)) {
     var matrix = this.timelineLayer_.getTransformationMatrix();
+
+    this.verticalTranslate = this.getAbsoluteOffset(this.verticalRelativeOffset_);
 
     //fix horizontal translate going places
     if (this.totalRange && (this.horizontalTranslate + this.dataBounds.getRight() > (this.totalRange.eX + this.dataBounds.left))) {
@@ -1320,11 +1334,12 @@ anychart.timelineModule.Chart.prototype.moveTo = function(x, y) {
 
     // Update vertical translate ratio.
     var height = this.dataBounds.height - this.axis().height();
-    this.verticalTranslateRatio = this.verticalTranslate / height;
+    var verticalTranslateRatio = this.verticalTranslate / height;
     // clamp vertical translate ratio inbetween -0.5 and 0.5 and save it as axis translate ratio
-    this.axisVerticalTranslateRatio = Math.min(Math.max(-0.5, this.verticalTranslateRatio), 0.5);
+    var axisRatio = goog.math.clamp(verticalTranslateRatio, -0.5, 0.5);
+    this.verticalRelativeOffset_.axisRatio = axisRatio;
     // how much series must be shifted against axis
-    this.seriesAgainstAxisOffset = (this.verticalTranslateRatio - this.axisVerticalTranslateRatio) * height;
+    this.verticalRelativeOffset_.seriesOffset = (verticalTranslateRatio - axisRatio) * height;
 
     var leftDate = this.scale().inverseTransform(this.horizontalTranslate / this.dataBounds.width);
     var rightDate = this.scale().inverseTransform((this.horizontalTranslate + this.dataBounds.width) / this.dataBounds.width);
@@ -1601,29 +1616,26 @@ anychart.timelineModule.Chart.prototype.scroll = function(opt_value) {
  * @return {anychart.timelineModule.Chart|{axisRatio: number, seriesOffset: number}}
  */
 anychart.timelineModule.Chart.prototype.verticalRelativeOffset = function(opt_value) {
-  // if (goog.isDef(opt_value)) {
-  //   if (goog.isNumber(opt_value) && !isNaN(opt_value) && this.verticalTranslateRatio != opt_value) {
-  //     this.verticalTranslateRatio = opt_value;
-  //     if (this.dataBounds) {
-  //       var height = this.dataBounds.height - this.axis().height();
-  //       this.moveTo(this.horizontalTranslate, this.dataBounds.height * this.verticalTranslateRatio);
-  //     }
-  //   }
-  //   return this;
-  // }
-
   if (goog.isDef(opt_value)) {
-    var absoluteVerticalOffset = this.getAbsoluteOffset(opt_value);
-    this.moveTo(this.horizontalTranslate, absoluteVerticalOffset);
+    var axisRatio = goog.isDef(opt_value.axisRatio) ?
+        goog.math.clamp(opt_value.axisRatio, -0.5, 0.5) :
+        0;
+    var seriesOffset = (goog.isDef(opt_value.seriesOffset) && Math.abs(axisRatio) == 0.5) ?
+        opt_value.seriesOffset :
+        0;
+
+    if (this.verticalRelativeOffset_.axisRatio !== axisRatio || this.verticalRelativeOffset_.seriesOffset !== seriesOffset) {
+      this.verticalRelativeOffset_ = {
+        axisRatio: axisRatio,
+        seriesOffset: seriesOffset
+      };
+
+      this.invalidateState(anychart.enums.Store.TIMELINE_CHART, anychart.timelineModule.Chart.States.SCROLL);
+    }
     return this;
   }
 
-  return {
-    axisRatio: this.axisVerticalTranslateRatio,
-    seriesOffset: this.seriesAgainstAxisOffset
-  };
-
-  // return this.verticalTranslateRatio;
+  return this.verticalRelativeOffset_;
 };
 
 
